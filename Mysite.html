@@ -1,0 +1,1852 @@
+<h1> Welcome to my site where i display my games that i have coded in the past.</h1>
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Arcade Racing - Trackmania Style</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            z-index: 100;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        #ui div {
+            margin: 5px 0;
+        }
+
+        #speed {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff00;
+        }
+
+        #crashWarning {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 200;
+            display: none;
+            text-align: center;
+            border: 3px solid #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+
+        #startScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 1000;
+            border: 2px solid #00ff00;
+        }
+
+        #startScreen h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        #startScreen button {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #startScreen button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 255, 0, 0.4);
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #levelSelectScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        #levelSelectScreen h1 {
+            text-align: center;
+            color: #00ff00;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .level-button {
+            background: linear-gradient(135deg, #333, #222);
+            border: 2px solid #555;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .level-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.5);
+            border-color: #00ff00;
+        }
+
+        .level-button.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: linear-gradient(135deg, #222, #111);
+        }
+
+        .level-button.completed {
+            border-color: #ffff00;
+            background: linear-gradient(135deg, #443, #332);
+        }
+
+        .level-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .level-name {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .level-time {
+            font-size: 0.8em;
+            color: #00ff00;
+        }
+
+        .level-locked {
+            font-size: 0.8em;
+            color: #ff0000;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #666, #444);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .back-button:hover {
+            background: linear-gradient(45deg, #777, #555);
+        }
+
+        #mainMenuScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .menu-button {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 15px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 250px;
+        }
+
+        .menu-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.5);
+        }
+
+        #trackEditorScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 4000;
+            display: none;
+        }
+
+        .editor-toolbar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            z-index: 4001;
+        }
+
+        .editor-toolbar button {
+            background: linear-gradient(45deg, #666, #444);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .editor-toolbar button:hover {
+            background: linear-gradient(45deg, #777, #555);
+        }
+
+        .editor-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            z-index: 4001;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer"></div>
+    
+    <div id="ui">
+        <div>Speed: <span id="speed">0</span> km/h</div>
+        <div>Time: <span id="time">0.0</span>s</div>
+        <div>Checkpoint: <span id="checkpoint">0</span> / <span id="totalCheckpoints">0</span></div>
+        <div style="margin-top: 10px; font-size: 14px; color: #ffaa00;">Press R to Reset</div>
+    </div>
+
+    <div id="crashWarning">
+        <div>CRASHED!</div>
+        <div style="font-size: 16px; margin-top: 10px;">Resetting to last checkpoint...</div>
+    </div>
+
+    <div id="mainMenuScreen">
+        <h1 style="font-size: 4em; color: #00ff00; text-shadow: 0 0 20px #00ff00; margin-bottom: 50px;">🏎️ 3D ARCADE RACING</h1>
+        <button class="menu-button" onclick="showLevelSelect()">CAMPAIGN</button>
+        <button class="menu-button" onclick="startQuickRace()">QUICK RACE</button>
+        <button class="menu-button" onclick="showTrackEditor()">TRACK EDITOR</button>
+        <div style="margin-top: 30px; color: #aaa; font-size: 0.9em;">
+            Type "unlockall" to unlock all tracks
+        </div>
+    </div>
+
+    <div id="startScreen" class="hidden">
+        <h1>🏎️ 3D ARCADE RACING</h1>
+        <p style="font-size: 1.2em; margin-bottom: 20px;">
+            Trackmania-style arcade racing!<br>
+            Navigate the track and beat your best time!
+        </p>
+        <button onclick="showLevelSelect()">CAMPAIGN</button>
+        <button onclick="startGame()" style="margin-left: 10px;">QUICK RACE</button>
+            <div id="controls" style="position: relative; margin-top: 20px; background: transparent; padding: 10px;">
+            <strong>Controls:</strong><br>
+            ⬆️ W / ↑ - Accelerate<br>
+            ⬇️ S / ↓ - Brake/Reverse<br>
+            ⬅️ A / ← - Turn Left<br>
+            ➡️ D / → - Turn Right<br>
+            Space - Handbrake<br>
+            R - Reset Car<br>
+            ESC - Back to Menu
+        </div>
+    </div>
+
+    <div id="levelSelectScreen" class="hidden">
+        <button class="back-button" onclick="showMainMenu()">← Back</button>
+        <h1>SELECT TRACK</h1>
+        <div class="level-grid" id="levelGrid"></div>
+    </div>
+
+    <div id="trackEditorScreen">
+        <div class="editor-toolbar">
+            <h3 style="margin-top: 0;">Track Editor</h3>
+            <button onclick="editorAddPoint()">Add Point</button>
+            <button onclick="editorDeletePoint()">Delete Point</button>
+            <button onclick="editorClearTrack()">Clear Track</button>
+            <button onclick="editorTestTrack()">Test Track</button>
+            <button onclick="editorSaveTrack()">Save Track</button>
+            <button onclick="editorLoadTrack()">Load Track</button>
+            <button onclick="showMainMenu()">Back to Menu</button>
+            <div style="margin-top: 15px; font-size: 0.9em;">
+                <strong>Controls:</strong><br>
+                Click: Add/Move Point<br>
+                Right Click: Delete Point<br>
+                Mouse Wheel: Adjust Height<br>
+                T: Test Track<br>
+                S: Save Track<br>
+                L: Load Track
+            </div>
+        </div>
+        <div class="editor-info">
+            <div>Points: <span id="editorPointCount">0</span></div>
+            <div>Mode: <span id="editorMode">Add</span></div>
+        </div>
+        <div id="editorContainer" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Game state
+        let scene, camera, renderer;
+        let car, carBody, carMesh;
+        let track = [];
+        let checkpoints = [];
+        let gameStarted = false;
+        let startTime = 0;
+        let currentCheckpoint = 0;
+        let keys = {};
+        let lastCheckpointPosition = new THREE.Vector3(0, 2, 0);
+        let resetCooldown = 0;
+        let gameStartTime = 0; // Track when game actually started
+        let currentLevel = 0; // Current track level (0 = quick race)
+        let trackProgress = {}; // Store progress: {level: {unlocked: bool, bestTime: number, completed: bool}}
+        let secretCode = ''; // Track secret code input
+        const SECRET_CODE = 'unlockall'; // Secret code to unlock all tracks
+        
+        // Track editor state
+        let editorMode = 'add'; // 'add', 'edit', 'delete'
+        let editorPoints = []; // Array of {x, y, z} points
+        let editorSelectedPoint = null;
+        let editorScene = null;
+        let editorCamera = null;
+        let editorRenderer = null;
+        let editorMouse = new THREE.Vector2();
+        let editorRaycaster = new THREE.Raycaster();
+        let editorPointMeshes = [];
+        let isEditorActive = false;
+        
+        // Track configurations for 25 levels
+        const trackConfigs = [];
+        for (let i = 0; i < 25; i++) {
+            trackConfigs.push({
+                name: `Track ${i + 1}`,
+                segments: 200 + Math.floor(Math.random() * 200),
+                complexity: 1 + (i * 0.15), // Increasing difficulty
+                turns: 3 + Math.floor(i / 5),
+                jumps: Math.floor(i / 8) + 1,
+                radius: 40 + (i * 2),
+                difficulty: i < 5 ? 'Easy' : i < 15 ? 'Medium' : 'Hard'
+            });
+        }
+        
+        // Car physics
+        const carPhysics = {
+            position: new THREE.Vector3(0, 2, 0),
+            velocity: new THREE.Vector3(0, 0, 0),
+            rotation: 0,
+            speed: 0,
+            maxSpeed: 300, // Higher top speed for arcade feel
+            acceleration: 0.6, // Reduced acceleration for better control
+            deceleration: 0.92,
+            turnSpeed: 0.04, // More responsive turning
+            friction: 0.97, // Less friction for arcade physics
+            airControl: 0.5 // Control in air (Trackmania style)
+        };
+
+        // Initialize Three.js scene
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 100, 1000);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 10, 20);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.getElementById('gameContainer').appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(50, 100, 50);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.camera.left = -200;
+            directionalLight.shadow.camera.right = 200;
+            directionalLight.shadow.camera.top = 200;
+            directionalLight.shadow.camera.bottom = -200;
+            scene.add(directionalLight);
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(2000, 2000);
+            const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x2d5016 });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Create track (will be created when level is selected or quick race starts)
+            // Track creation happens in startGame() or selectLevel()
+
+            // Create car
+            createCar();
+
+            // Event listeners
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+        }
+
+        // Create procedural track with configuration
+        function createTrack(config = null) {
+            const trackWidth = 8;
+            const cfg = config || {
+                segments: 300,
+                complexity: 1,
+                turns: 5,
+                jumps: 2,
+                radius: 60
+            };
+            
+            // Generate track path (curves, jumps, and loops)
+            const path = [];
+            for (let i = 0; i <= cfg.segments; i++) {
+                const t = i / cfg.segments;
+                const angle = t * Math.PI * cfg.turns * cfg.complexity + 
+                             Math.sin(t * Math.PI * 10 * cfg.complexity) * (0.4 + cfg.complexity * 0.2);
+                const radius = cfg.radius + Math.sin(t * Math.PI * 8 * cfg.complexity) * (20 + cfg.complexity * 10);
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                
+                // Create jumps and hills based on config
+                let y = 0;
+                const jumpCount = cfg.jumps;
+                for (let j = 0; j < jumpCount; j++) {
+                    const jumpStart = (j + 1) / (jumpCount + 2);
+                    const jumpEnd = jumpStart + 0.05;
+                    if (t > jumpStart && t < jumpEnd) {
+                        y += Math.sin((t - jumpStart) * Math.PI * 20) * (10 + cfg.complexity * 5);
+                    }
+                }
+                // General hills
+                y += Math.sin(t * Math.PI * 6 * cfg.complexity) * (3 + cfg.complexity * 2) + 
+                     Math.sin(t * Math.PI * 12 * cfg.complexity) * (1 + cfg.complexity);
+                
+                path.push(new THREE.Vector3(x, y, z));
+            }
+
+            // Create track mesh
+            const trackGeometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const normals = [];
+            const indices = [];
+
+            for (let i = 0; i < path.length - 1; i++) {
+                const p1 = path[i];
+                const p2 = path[i + 1];
+                const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
+                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
+                
+                const halfWidth = trackWidth / 2;
+                const v1 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(halfWidth));
+                const v2 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(-halfWidth));
+                const v3 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(halfWidth));
+                const v4 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(-halfWidth));
+
+                const baseIndex = vertices.length / 3;
+                vertices.push(v1.x, v1.y, v1.z);
+                vertices.push(v2.x, v2.y, v2.z);
+                vertices.push(v3.x, v3.y, v3.z);
+                vertices.push(v4.x, v4.y, v4.z);
+
+                indices.push(baseIndex, baseIndex + 1, baseIndex + 2);
+                indices.push(baseIndex + 1, baseIndex + 3, baseIndex + 2);
+
+                normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
+            }
+
+            trackGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            trackGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+            trackGeometry.setIndex(indices);
+            trackGeometry.computeBoundingBox();
+
+            // Road surface material (asphalt-like)
+            const trackMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x666666, // Medium grey road color - clearly visible
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            
+            // Add edge lines (white lines on both sides)
+            const edgeLineGeometry = new THREE.BufferGeometry();
+            const edgeVertices = [];
+            const edgeIndices = [];
+            
+            for (let i = 0; i < path.length - 1; i++) {
+                const p1 = path[i];
+                const p2 = path[i + 1];
+                const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
+                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
+                
+                const lineWidth = 0.2;
+                const halfWidth = trackWidth / 2;
+                
+                // Left edge line
+                const left1 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(halfWidth));
+                const left2 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(halfWidth + lineWidth));
+                const left3 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(halfWidth));
+                const left4 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(halfWidth + lineWidth));
+                
+                // Right edge line
+                const right1 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(-halfWidth));
+                const right2 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(-halfWidth - lineWidth));
+                const right3 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(-halfWidth));
+                const right4 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(-halfWidth - lineWidth));
+                
+                const baseIndex = edgeVertices.length / 3;
+                
+                // Left edge
+                edgeVertices.push(left1.x, left1.y + 0.02, left1.z);
+                edgeVertices.push(left2.x, left2.y + 0.02, left2.z);
+                edgeVertices.push(left3.x, left3.y + 0.02, left3.z);
+                edgeVertices.push(left4.x, left4.y + 0.02, left4.z);
+                
+                edgeIndices.push(baseIndex, baseIndex + 1, baseIndex + 2);
+                edgeIndices.push(baseIndex + 1, baseIndex + 3, baseIndex + 2);
+                
+                // Right edge
+                edgeVertices.push(right1.x, right1.y + 0.02, right1.z);
+                edgeVertices.push(right2.x, right2.y + 0.02, right2.z);
+                edgeVertices.push(right3.x, right3.y + 0.02, right3.z);
+                edgeVertices.push(right4.x, right4.y + 0.02, right4.z);
+                
+                edgeIndices.push(baseIndex + 4, baseIndex + 5, baseIndex + 6);
+                edgeIndices.push(baseIndex + 5, baseIndex + 7, baseIndex + 6);
+            }
+            
+            edgeLineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
+            edgeLineGeometry.setIndex(edgeIndices);
+            
+            const edgeLineMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                emissive: 0xffffff,
+                emissiveIntensity: 0.3
+            });
+            const edgeLines = new THREE.Mesh(edgeLineGeometry, edgeLineMaterial);
+            scene.add(edgeLines);
+            
+            // Add dashed center line (yellow)
+            const centerLineGeometry = new THREE.BufferGeometry();
+            const centerVertices = [];
+            const centerIndices = [];
+            
+            const dashLength = 2;
+            const gapLength = 1.5;
+            let currentDistance = 0;
+            
+            for (let i = 0; i < path.length - 1; i++) {
+                const p1 = path[i];
+                const p2 = path[i + 1];
+                const segmentLength = p1.distanceTo(p2);
+                const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
+                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
+                
+                let segmentDistance = 0;
+                while (segmentDistance < segmentLength) {
+                    const dashProgress = currentDistance % (dashLength + gapLength);
+                    if (dashProgress < dashLength) {
+                        const lineWidth = 0.25;
+                        const dashStart = p1.clone().add(dir.clone().multiplyScalar(segmentDistance));
+                        const dashEnd = p1.clone().add(dir.clone().multiplyScalar(Math.min(segmentDistance + dashLength - dashProgress, segmentLength)));
+                        
+                        const v1 = new THREE.Vector3().addVectors(dashStart, right.clone().multiplyScalar(lineWidth));
+                        const v2 = new THREE.Vector3().addVectors(dashStart, right.clone().multiplyScalar(-lineWidth));
+                        const v3 = new THREE.Vector3().addVectors(dashEnd, right.clone().multiplyScalar(lineWidth));
+                        const v4 = new THREE.Vector3().addVectors(dashEnd, right.clone().multiplyScalar(-lineWidth));
+                        
+                        const baseIndex = centerVertices.length / 3;
+                        centerVertices.push(v1.x, v1.y + 0.02, v1.z);
+                        centerVertices.push(v2.x, v2.y + 0.02, v2.z);
+                        centerVertices.push(v3.x, v3.y + 0.02, v3.z);
+                        centerVertices.push(v4.x, v4.y + 0.02, v4.z);
+                        
+                        centerIndices.push(baseIndex, baseIndex + 1, baseIndex + 2);
+                        centerIndices.push(baseIndex + 1, baseIndex + 3, baseIndex + 2);
+                    }
+                    
+                    segmentDistance += (dashLength + gapLength) - (currentDistance % (dashLength + gapLength));
+                    currentDistance += (dashLength + gapLength) - (currentDistance % (dashLength + gapLength));
+                    
+                    if (segmentDistance >= segmentLength) break;
+                }
+                currentDistance += segmentLength - Math.floor(segmentDistance / (dashLength + gapLength)) * (dashLength + gapLength);
+            }
+            
+            centerLineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(centerVertices, 3));
+            centerLineGeometry.setIndex(centerIndices);
+            
+            const centerLineMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffff00,
+                emissive: 0xffff00,
+                emissiveIntensity: 1.0 // Brighter center line
+            });
+            const centerLine = new THREE.Mesh(centerLineGeometry, centerLineMaterial);
+            scene.add(centerLine);
+            const trackMesh = new THREE.Mesh(trackGeometry, trackMaterial);
+            trackMesh.receiveShadow = true;
+            scene.add(trackMesh);
+
+            // Track barriers
+            createBarriers(path, trackWidth);
+
+            // Store path for car navigation
+            track = path;
+
+            // Create checkpoints
+            createCheckpoints(path);
+            
+            // Create finish line at the end of the track
+            createFinishLine(path[path.length - 1]);
+        }
+        
+        // Create finish line
+        function createFinishLine(position) {
+            const finishGeometry = new THREE.PlaneGeometry(18, 12);
+            const finishMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.8
+            });
+            const finishLine = new THREE.Mesh(finishGeometry, finishMaterial);
+            finishLine.position.copy(position);
+            finishLine.position.y = position.y + 6;
+            // Calculate rotation based on direction from second-to-last to last point
+            const lastIndex = track.length - 1;
+            const secondLastIndex = Math.max(0, lastIndex - 1);
+            finishLine.rotation.y = Math.atan2(
+                track[lastIndex].x - track[secondLastIndex].x, 
+                track[lastIndex].z - track[secondLastIndex].z
+            );
+            finishLine.userData.isFinishLine = true;
+            scene.add(finishLine);
+            
+            // Checkered pattern
+            const checkerSize = 2;
+            const checkerMaterial1 = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const checkerMaterial2 = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 6; j++) {
+                    const checker = new THREE.Mesh(
+                        new THREE.PlaneGeometry(checkerSize, checkerSize),
+                        (i + j) % 2 === 0 ? checkerMaterial1 : checkerMaterial2
+                    );
+                    checker.position.set(
+                        position.x + (i - 4) * checkerSize,
+                        position.y + 6,
+                        position.z + (j - 3) * checkerSize
+                    );
+                    checker.rotation.y = finishLine.rotation.y;
+                    scene.add(checker);
+                }
+            }
+        }
+
+        // Create track barriers
+        function createBarriers(path, trackWidth) {
+            const barrierHeight = 2;
+            const barrierGeometry = new THREE.BoxGeometry(0.5, barrierHeight, 0.5);
+            const barrierMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+            
+            for (let i = 0; i < path.length; i += 5) {
+                const p = path[i];
+                const nextP = path[Math.min(i + 1, path.length - 1)];
+                const dir = new THREE.Vector3().subVectors(nextP, p).normalize();
+                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
+                
+                const halfWidth = trackWidth / 2 + 0.5;
+                
+                // Left barrier
+                const leftBarrier = new THREE.Mesh(barrierGeometry, barrierMaterial);
+                leftBarrier.position.copy(new THREE.Vector3().addVectors(p, right.clone().multiplyScalar(halfWidth)));
+                leftBarrier.position.y = p.y + barrierHeight / 2;
+                leftBarrier.castShadow = true;
+                scene.add(leftBarrier);
+                
+                // Right barrier
+                const rightBarrier = new THREE.Mesh(barrierGeometry, barrierMaterial);
+                rightBarrier.position.copy(new THREE.Vector3().addVectors(p, right.clone().multiplyScalar(-halfWidth)));
+                rightBarrier.position.y = p.y + barrierHeight / 2;
+                rightBarrier.castShadow = true;
+                scene.add(rightBarrier);
+            }
+        }
+
+        // Helper function to create text texture
+        function createTextTexture(text, fontSize = 64, color = '#ffffff', bgColor = 'rgba(0,0,0,0)') {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 256;
+            
+            context.fillStyle = bgColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            context.font = `bold ${fontSize}px Arial`;
+            context.fillStyle = color;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            return texture;
+        }
+
+        // Create checkpoints
+        function createCheckpoints(path) {
+            // Create fewer checkpoints - every 50 segments instead of 20
+            // Skip the first and last points (start and finish)
+            for (let i = 50; i < path.length - 50; i += 50) {
+                const checkpointNumber = checkpoints.length + 1;
+                const checkpointGroup = new THREE.Group();
+                
+                // Create arch shape using a torus
+                const archGeometry = new THREE.TorusGeometry(4, 0.3, 8, 16, Math.PI);
+                const archMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x00ff00,
+                    emissive: 0x00ff00,
+                    emissiveIntensity: 0.5,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                
+                // Left arch pillar
+                const leftArch = new THREE.Mesh(archGeometry, archMaterial);
+                leftArch.rotation.z = Math.PI / 2;
+                leftArch.position.set(-3, 0, 0);
+                checkpointGroup.add(leftArch);
+                
+                // Right arch pillar
+                const rightArch = new THREE.Mesh(archGeometry, archMaterial);
+                rightArch.rotation.z = Math.PI / 2;
+                rightArch.position.set(3, 0, 0);
+                checkpointGroup.add(rightArch);
+                
+                // Top arch (horizontal torus)
+                const topArchGeometry = new THREE.TorusGeometry(3.5, 0.3, 8, 16);
+                const topArch = new THREE.Mesh(topArchGeometry, archMaterial);
+                topArch.rotation.x = Math.PI / 2;
+                topArch.position.set(0, 6, 0);
+                checkpointGroup.add(topArch);
+                
+                // Green hitbox inside (invisible but used for detection)
+                const hitboxGeometry = new THREE.BoxGeometry(8, 8, 1);
+                const hitboxMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x00ff00,
+                    transparent: true,
+                    opacity: 0.2,
+                    visible: true // Make it slightly visible so you can see it
+                });
+                const hitbox = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
+                hitbox.position.set(0, 4, 0);
+                hitbox.userData.isHitbox = true;
+                checkpointGroup.add(hitbox);
+                
+                // Add number label
+                const numberTexture = createTextTexture(
+                    checkpointNumber.toString(), 
+                    120, 
+                    '#00ff00',
+                    'rgba(0,0,0,0.7)'
+                );
+                const numberMaterial = new THREE.MeshStandardMaterial({
+                    map: numberTexture,
+                    transparent: true,
+                    emissive: 0x00ff00,
+                    emissiveIntensity: 0.5
+                });
+                const numberPlane = new THREE.Mesh(
+                    new THREE.PlaneGeometry(2, 2),
+                    numberMaterial
+                );
+                numberPlane.position.set(0, 4, 0.1);
+                numberPlane.userData.isNumber = true;
+                checkpointGroup.add(numberPlane);
+                
+                // Position the checkpoint group
+                checkpointGroup.position.copy(path[i]);
+                checkpointGroup.position.y = path[i].y + 4;
+                
+                // Calculate rotation to face track direction
+                const nextPoint = path[Math.min(i + 5, path.length - 1)];
+                const direction = new THREE.Vector3().subVectors(nextPoint, path[i]).normalize();
+                checkpointGroup.rotation.y = Math.atan2(direction.x, direction.z);
+                
+                checkpointGroup.userData.isCheckpoint = true;
+                checkpointGroup.userData.index = checkpoints.length;
+                scene.add(checkpointGroup);
+                
+                checkpoints.push({
+                    mesh: checkpointGroup,
+                    hitbox: hitbox,
+                    position: path[i],
+                    passed: false,
+                    numberMesh: numberPlane
+                });
+            }
+            
+            // Update total checkpoints display
+            document.getElementById('totalCheckpoints').textContent = checkpoints.length;
+        }
+
+        // Create car
+        function createCar() {
+            car = new THREE.Group();
+
+            // Car body
+            const bodyGeometry = new THREE.BoxGeometry(2, 0.8, 4);
+            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x0066ff });
+            carBody = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            carBody.castShadow = true;
+            car.add(carBody);
+
+            // Car roof
+            const roofGeometry = new THREE.BoxGeometry(1.5, 0.6, 2);
+            const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x0044aa });
+            const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+            roof.position.y = 0.7;
+            roof.castShadow = true;
+            car.add(roof);
+
+            // Wheels
+            const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+            const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
+            
+            const wheelPositions = [
+                [1.2, -0.4, 1.2],
+                [-1.2, -0.4, 1.2],
+                [1.2, -0.4, -1.2],
+                [-1.2, -0.4, -1.2]
+            ];
+
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(pos[0], pos[1], pos[2]);
+                wheel.castShadow = true;
+                car.add(wheel);
+            });
+
+            // Front headlights (white/yellow glowing)
+            const headlightGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+            const headlightMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffaa,
+                emissive: 0xffffaa,
+                emissiveIntensity: 1.5
+            });
+            
+            // Left headlight
+            const leftHeadlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+            leftHeadlight.position.set(0.6, 0.2, 2.05);
+            car.add(leftHeadlight);
+            
+            // Right headlight
+            const rightHeadlight = new THREE.Mesh(headlightGeometry, headlightMaterial);
+            rightHeadlight.position.set(-0.6, 0.2, 2.05);
+            car.add(rightHeadlight);
+
+            // Front bumper/grille (darker detail)
+            const frontBumperGeometry = new THREE.BoxGeometry(1.8, 0.3, 0.1);
+            const frontBumperMaterial = new THREE.MeshStandardMaterial({ color: 0x001133 });
+            const frontBumper = new THREE.Mesh(frontBumperGeometry, frontBumperMaterial);
+            frontBumper.position.set(0, -0.1, 2.05);
+            car.add(frontBumper);
+
+            // Rear taillights (red glowing)
+            const taillightGeometry = new THREE.SphereGeometry(0.15, 8, 8);
+            const taillightMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xff0000,
+                emissive: 0xff0000,
+                emissiveIntensity: 1.5
+            });
+            
+            // Left taillight
+            const leftTaillight = new THREE.Mesh(taillightGeometry, taillightMaterial);
+            leftTaillight.position.set(0.6, 0.2, -2.05);
+            car.add(leftTaillight);
+            
+            // Right taillight
+            const rightTaillight = new THREE.Mesh(taillightGeometry, taillightMaterial);
+            rightTaillight.position.set(-0.6, 0.2, -2.05);
+            car.add(rightTaillight);
+
+            // Rear bumper (darker detail)
+            const rearBumperGeometry = new THREE.BoxGeometry(1.8, 0.3, 0.1);
+            const rearBumperMaterial = new THREE.MeshStandardMaterial({ color: 0x001133 });
+            const rearBumper = new THREE.Mesh(rearBumperGeometry, rearBumperMaterial);
+            rearBumper.position.set(0, -0.1, -2.05);
+            car.add(rearBumper);
+
+            // Rear spoiler (makes back more obvious)
+            const spoilerGeometry = new THREE.BoxGeometry(1.6, 0.2, 0.3);
+            const spoilerMaterial = new THREE.MeshStandardMaterial({ color: 0x002244 });
+            const spoiler = new THREE.Mesh(spoilerGeometry, spoilerMaterial);
+            spoiler.position.set(0, 0.9, -1.8);
+            car.add(spoiler);
+
+            car.position.copy(carPhysics.position);
+            scene.add(car);
+        }
+
+        // Update car physics
+        function updateCar(deltaTime) {
+            if (!gameStarted) return;
+
+            // Input handling
+            let acceleration = 0;
+            let turn = 0;
+
+            if (keys['w'] || keys['ArrowUp']) {
+                acceleration = carPhysics.acceleration;
+            }
+            if (keys['s'] || keys['ArrowDown']) {
+                acceleration = -carPhysics.acceleration * 0.5;
+            }
+            if (keys['a'] || keys['ArrowLeft']) {
+                turn = carPhysics.turnSpeed;
+            }
+            if (keys['d'] || keys['ArrowRight']) {
+                turn = -carPhysics.turnSpeed;
+            }
+
+            // Apply handbrake
+            if (keys[' ']) {
+                carPhysics.velocity.multiplyScalar(0.9);
+            }
+
+            // Check if car is in air
+            const trackY = getTrackHeight(carPhysics.position);
+            const isInAir = carPhysics.position.y > trackY + 1.5;
+            
+            // Update rotation (more control in air for Trackmania feel)
+            const turnMultiplier = isInAir ? carPhysics.airControl : 1.0;
+            carPhysics.rotation += turn * carPhysics.speed * 0.01 * turnMultiplier;
+
+            // Update velocity
+            const forward = new THREE.Vector3(
+                Math.sin(carPhysics.rotation),
+                0,
+                Math.cos(carPhysics.rotation)
+            );
+
+            // Only apply ground acceleration when on ground
+            if (!isInAir) {
+                carPhysics.velocity.add(forward.multiplyScalar(acceleration));
+                carPhysics.velocity.multiplyScalar(carPhysics.friction);
+            } else {
+                // Air control - can still steer slightly
+                const airForward = forward.clone();
+                airForward.multiplyScalar(acceleration * 0.3);
+                carPhysics.velocity.add(airForward);
+            }
+
+            // Limit speed
+            const horizontalSpeed = Math.sqrt(carPhysics.velocity.x * carPhysics.velocity.x + 
+                                             carPhysics.velocity.z * carPhysics.velocity.z);
+            if (horizontalSpeed > carPhysics.maxSpeed * 0.01) {
+                const scale = (carPhysics.maxSpeed * 0.01) / horizontalSpeed;
+                carPhysics.velocity.x *= scale;
+                carPhysics.velocity.z *= scale;
+            }
+            carPhysics.speed = horizontalSpeed * 100; // Convert to km/h
+
+            // Update position
+            carPhysics.position.add(carPhysics.velocity);
+
+            // Ground collision with better physics
+            if (carPhysics.position.y < trackY + 1) {
+                const bounce = Math.max(0, -carPhysics.velocity.y * 0.3); // Slight bounce
+                carPhysics.position.y = trackY + 1;
+                carPhysics.velocity.y = bounce;
+            } else {
+                carPhysics.velocity.y -= 0.02; // Gravity
+            }
+
+            // Update car mesh
+            car.position.copy(carPhysics.position);
+            car.rotation.y = carPhysics.rotation;
+
+            // Check checkpoints
+            checkCheckpoints();
+            
+            // Check for crashes
+            checkCrash();
+        }
+        
+        // Check if car has crashed
+        function checkCrash() {
+            if (!gameStarted || resetCooldown > 0) {
+                resetCooldown = Math.max(0, resetCooldown - 1);
+                return;
+            }
+            
+            // Don't check for crashes in the first 3 seconds (grace period)
+            const timeSinceStart = (Date.now() - gameStartTime) / 1000;
+            if (timeSinceStart < 3) {
+                return;
+            }
+            
+            const trackY = getTrackHeight(carPhysics.position);
+            const distanceFromTrack = getDistanceFromTrack(carPhysics.position);
+            
+            // Very lenient crash conditions - only reset on extreme crashes:
+            // 1. Car fell way too low (below track - 30 units) - really fallen off
+            // 2. Car is extremely far from track center (more than 50 units)
+            // 3. Car is impossibly high (more than 150 units above track)
+            // Only auto-reset on truly severe crashes - use R key for manual resets
+            const hasCrashed = carPhysics.position.y < trackY - 30 || 
+                             distanceFromTrack > 50 || 
+                             carPhysics.position.y > trackY + 150;
+            
+            if (hasCrashed) {
+                resetCar();
+            }
+        }
+        
+        // Get distance from track center
+        function getDistanceFromTrack(position) {
+            let minDist = Infinity;
+            
+            for (let i = 0; i < track.length; i++) {
+                const dist = position.distanceTo(track[i]);
+                if (dist < minDist) {
+                    minDist = dist;
+                }
+            }
+            
+            return minDist;
+        }
+        
+        // Reset car to last checkpoint
+        function resetCar() {
+            // Show crash warning
+            const crashWarning = document.getElementById('crashWarning');
+            crashWarning.style.display = 'block';
+            
+            setTimeout(() => {
+                crashWarning.style.display = 'none';
+            }, 2000);
+            
+            // Reset to last checkpoint position
+            const resetPosition = lastCheckpointPosition.clone();
+            
+            // Find direction of track at checkpoint
+            let checkpointIndex = 0;
+            for (let i = 0; i < track.length; i++) {
+                if (track[i].distanceTo(resetPosition) < 5) {
+                    checkpointIndex = i;
+                    break;
+                }
+            }
+            
+            const nextPoint = track[Math.min(checkpointIndex + 5, track.length - 1)];
+            const direction = new THREE.Vector3().subVectors(nextPoint, resetPosition).normalize();
+            const rotation = Math.atan2(direction.x, direction.z);
+            
+            // Reset car physics
+            carPhysics.position.copy(resetPosition);
+            carPhysics.position.y += 1; // Slightly above track
+            carPhysics.velocity.set(0, 0, 0);
+            carPhysics.rotation = rotation;
+            carPhysics.speed = 0;
+            
+            // Set cooldown to prevent immediate reset
+            resetCooldown = 60; // 1 second at 60fps
+        }
+
+        // Get track height at position
+        function getTrackHeight(position) {
+            let minDist = Infinity;
+            let height = 0;
+            
+            for (let i = 0; i < track.length; i++) {
+                const dist = position.distanceTo(track[i]);
+                if (dist < minDist) {
+                    minDist = dist;
+                    height = track[i].y;
+                }
+            }
+            
+            return height;
+        }
+
+        // Check checkpoints
+        function checkCheckpoints() {
+            // Only check the current checkpoint to avoid out-of-order issues
+            if (currentCheckpoint < checkpoints.length) {
+                const checkpoint = checkpoints[currentCheckpoint];
+                
+                if (!checkpoint.passed) {
+                    // Use checkpoint mesh world position for detection
+                    const checkpointWorldPos = new THREE.Vector3();
+                    checkpoint.mesh.getWorldPosition(checkpointWorldPos);
+                    
+                    // Check distance to checkpoint (using the position stored, which is more reliable)
+                    const distance = carPhysics.position.distanceTo(checkpoint.position);
+                    
+                    if (distance < 8) {
+                        checkpoint.passed = true;
+                        currentCheckpoint++;
+                        
+                        // Change arch color to yellow when passed
+                        checkpoint.mesh.children.forEach(child => {
+                            if (child.material && !child.userData.isHitbox && !child.userData.isNumber) {
+                                child.material.color.setHex(0xffff00);
+                                child.material.emissive.setHex(0xffff00);
+                            }
+                            // Change number color to yellow when passed
+                            if (child.userData.isNumber && child.material) {
+                                const yellowTexture = createTextTexture(
+                                    (currentCheckpoint).toString(),
+                                    120,
+                                    '#ffff00',
+                                    'rgba(0,0,0,0.7)'
+                                );
+                                child.material.map = yellowTexture;
+                                child.material.emissive.setHex(0xffff00);
+                                child.material.needsUpdate = true;
+                            }
+                        });
+                        
+                        // Update last checkpoint position for reset
+                        lastCheckpointPosition.copy(checkpoint.position);
+                        
+                        // Update UI immediately
+                        document.getElementById('checkpoint').textContent = currentCheckpoint;
+                    }
+                }
+            }
+            
+            // Check finish line (at the end of the track)
+            const finishPosition = track[track.length - 1];
+            if (currentCheckpoint >= checkpoints.length && 
+                carPhysics.position.distanceTo(finishPosition) < 12) {
+                const finishTime = (Date.now() - startTime) / 1000;
+                completeLevel(finishTime);
+                
+                let message = `Race Complete!\nTime: ${finishTime.toFixed(2)}s\nCheckpoints: ${currentCheckpoint}`;
+                if (currentLevel > 0) {
+                    const progress = trackProgress[currentLevel];
+                    if (progress && progress.bestTime && finishTime < progress.bestTime) {
+                        message += `\n\n🏆 New Best Time!`;
+                    }
+                    if (currentLevel < 25) {
+                        message += `\n\nTrack ${currentLevel + 1} unlocked!`;
+                    }
+                }
+                
+                if (confirm(message + '\n\nPlay again?')) {
+                    if (currentLevel > 0) {
+                        resetScene();
+                        createTrack(trackConfigs[currentLevel - 1]);
+                    }
+                    startGame();
+                } else {
+                    // Return to menu
+                    gameStarted = false;
+                    document.getElementById('startScreen').classList.remove('hidden');
+                    if (currentLevel > 0) {
+                        renderLevelSelect();
+                    }
+                }
+            }
+        }
+
+        // Update camera to follow car
+        function updateCamera() {
+            if (!gameStarted) return;
+
+            const idealOffset = new THREE.Vector3(0, 8, 15);
+            idealOffset.applyAxisAngle(new THREE.Vector3(0, 1, 0), carPhysics.rotation);
+            
+            const idealPosition = new THREE.Vector3().addVectors(carPhysics.position, idealOffset);
+            
+            camera.position.lerp(idealPosition, 0.1);
+            camera.lookAt(carPhysics.position);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const deltaTime = 0.016; // ~60fps
+
+            if (gameStarted) {
+                updateCar(deltaTime);
+                updateCamera();
+                
+                // Update UI
+                document.getElementById('speed').textContent = Math.round(carPhysics.speed);
+                const elapsed = (Date.now() - startTime) / 1000;
+                document.getElementById('time').textContent = elapsed.toFixed(1);
+                document.getElementById('checkpoint').textContent = currentCheckpoint;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Secret code handler
+        function checkSecretCode(key) {
+            secretCode += key.toLowerCase();
+            // Keep only last N characters (where N is secret code length)
+            if (secretCode.length > SECRET_CODE.length) {
+                secretCode = secretCode.slice(-SECRET_CODE.length);
+            }
+            
+            // Check if secret code matches
+            if (secretCode === SECRET_CODE) {
+                unlockAllTracks();
+                secretCode = ''; // Reset after use
+            }
+        }
+
+        // Unlock all tracks
+        function unlockAllTracks() {
+            // Unlock all 25 tracks
+            for (let i = 1; i <= 25; i++) {
+                if (!trackProgress[i]) {
+                    trackProgress[i] = {unlocked: true, bestTime: null, completed: false};
+                } else {
+                    trackProgress[i].unlocked = true;
+                }
+            }
+            saveProgress();
+            
+            // Show notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 255, 0, 0.9);
+                color: white;
+                padding: 30px 50px;
+                border-radius: 15px;
+                font-size: 24px;
+                font-weight: bold;
+                z-index: 10000;
+                text-align: center;
+                box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+            `;
+            notification.textContent = '🔓 ALL TRACKS UNLOCKED!';
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+            
+            // Refresh level select if it's open
+            if (!document.getElementById('levelSelectScreen').classList.contains('hidden')) {
+                renderLevelSelect();
+            }
+        }
+
+        // Event handlers
+        function onKeyDown(event) {
+            const key = event.key.toLowerCase();
+            keys[key] = true;
+            
+            // Check for secret code (only check letter keys)
+            if (key.length === 1 && /[a-z]/.test(key)) {
+                checkSecretCode(key);
+            }
+            
+            // Reset on R key
+            if (key === 'r' && gameStarted && resetCooldown === 0) {
+                resetCar();
+            }
+            
+            // ESC to return to menu
+            if (event.key === 'Escape') {
+                if (gameStarted) {
+                    gameStarted = false;
+                    showMainMenu();
+                } else if (isEditorActive) {
+                    showMainMenu();
+                }
+            }
+            
+            // Editor shortcuts
+            if (isEditorActive) {
+                if (key === 't') editorTestTrack();
+                if (key === 's') editorSaveTrack();
+                if (key === 'l') editorLoadTrack();
+            }
+        }
+
+        function onKeyUp(event) {
+            keys[event.key.toLowerCase()] = false;
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Menu navigation functions
+        function showMainMenu() {
+            document.getElementById('mainMenuScreen').style.display = 'flex';
+            document.getElementById('levelSelectScreen').classList.add('hidden');
+            document.getElementById('trackEditorScreen').style.display = 'none';
+            document.getElementById('startScreen').classList.add('hidden');
+            isEditorActive = false;
+        }
+
+        function startQuickRace() {
+            currentLevel = 0;
+            showMainMenu();
+            document.getElementById('mainMenuScreen').style.display = 'none';
+            if (track.length === 0) {
+                resetScene();
+                createTrack();
+            }
+            startGame();
+        }
+
+        // Level selection functions
+        function showLevelSelect() {
+            document.getElementById('mainMenuScreen').style.display = 'none';
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('levelSelectScreen').classList.remove('hidden');
+            renderLevelSelect();
+        }
+
+        function hideLevelSelect() {
+            document.getElementById('levelSelectScreen').classList.add('hidden');
+            showMainMenu();
+        }
+
+        function renderLevelSelect() {
+            const grid = document.getElementById('levelGrid');
+            grid.innerHTML = '';
+            
+            // Load progress from localStorage
+            loadProgress();
+            
+            trackConfigs.forEach((config, index) => {
+                const level = index + 1;
+                const progress = trackProgress[level] || {unlocked: level === 1, bestTime: null, completed: false};
+                
+                const button = document.createElement('div');
+                button.className = 'level-button';
+                if (!progress.unlocked) {
+                    button.classList.add('locked');
+                }
+                if (progress.completed) {
+                    button.classList.add('completed');
+                }
+                
+                button.innerHTML = `
+                    <div class="level-number">${level}</div>
+                    <div class="level-name">${config.name}</div>
+                    <div style="font-size: 0.7em; color: #888; margin: 5px 0;">${config.difficulty}</div>
+                    ${progress.bestTime ? 
+                        `<div class="level-time">Best: ${progress.bestTime.toFixed(2)}s</div>` : 
+                        `<div class="level-time">Not completed</div>`
+                    }
+                    ${!progress.unlocked ? '<div class="level-locked">🔒 Locked</div>' : ''}
+                `;
+                
+                if (progress.unlocked) {
+                    button.onclick = () => selectLevel(level);
+                }
+                
+                grid.appendChild(button);
+            });
+        }
+
+        function selectLevel(level) {
+            currentLevel = level;
+            hideLevelSelect();
+            resetScene();
+            createTrack(trackConfigs[level - 1]);
+            startGame();
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('trackmaniaProgress');
+            if (saved) {
+                trackProgress = JSON.parse(saved);
+            } else {
+                // Initialize: first level unlocked
+                trackProgress = {1: {unlocked: true, bestTime: null, completed: false}};
+            }
+        }
+
+        function saveProgress() {
+            localStorage.setItem('trackmaniaProgress', JSON.stringify(trackProgress));
+        }
+
+        function completeLevel(time) {
+            if (currentLevel === 0) return; // Quick race doesn't save
+            
+            const progress = trackProgress[currentLevel] || {unlocked: true, bestTime: null, completed: false};
+            
+            if (!progress.bestTime || time < progress.bestTime) {
+                progress.bestTime = time;
+            }
+            progress.completed = true;
+            
+            // Unlock next level
+            const nextLevel = currentLevel + 1;
+            if (nextLevel <= 25 && !trackProgress[nextLevel]) {
+                trackProgress[nextLevel] = {unlocked: true, bestTime: null, completed: false};
+            }
+            
+            trackProgress[currentLevel] = progress;
+            saveProgress();
+        }
+
+        function resetScene() {
+            // Clear existing track elements (but keep lighting, ground, and car)
+            const toRemove = [];
+            scene.children.forEach(child => {
+                // Keep essential elements
+                if (child === car || 
+                    child.type === 'DirectionalLight' || 
+                    child.type === 'AmbientLight' ||
+                    (child.type === 'Mesh' && child.material && 
+                     child.material.color && 
+                     child.material.color.r > 0.1 && child.material.color.g > 0.4 && 
+                     child.material.color.b < 0.2)) {
+                    // Keep car, lights, and ground (green grass)
+                    return;
+                }
+                // Remove everything else (track, barriers, checkpoints, finish line, road markings)
+                toRemove.push(child);
+            });
+            
+            toRemove.forEach(item => scene.remove(item));
+            
+            // Reset track arrays
+            track = [];
+            checkpoints = [];
+        }
+
+        function startGame() {
+            // If quick race and no track exists, create default track
+            if (currentLevel === 0 && track.length === 0) {
+                resetScene();
+                createTrack();
+            }
+            
+            // Make sure car is in scene
+            if (car && !scene.children.includes(car)) {
+                scene.add(car);
+            }
+            
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('levelSelectScreen').classList.add('hidden');
+            gameStarted = true;
+            startTime = Date.now();
+            gameStartTime = Date.now(); // Track when game started for grace period
+            currentCheckpoint = 0;
+            
+            // Reset car to start position
+            if (track.length > 0) {
+                carPhysics.position.copy(track[0]);
+                carPhysics.position.y += 1;
+                lastCheckpointPosition.copy(track[0]);
+                lastCheckpointPosition.y += 1;
+            } else {
+                carPhysics.position.set(0, 2, 0);
+                lastCheckpointPosition.set(0, 2, 0);
+            }
+            carPhysics.velocity.set(0, 0, 0);
+            carPhysics.rotation = 0;
+            carPhysics.speed = 0;
+            resetCooldown = 0;
+            
+            // Reset checkpoints
+            checkpoints.forEach((cp, index) => {
+                cp.passed = false;
+                // Reset arch colors to green
+                cp.mesh.children.forEach(child => {
+                    if (child.material && !child.userData.isHitbox && !child.userData.isNumber) {
+                        child.material.color.setHex(0x00ff00);
+                        child.material.emissive.setHex(0x00ff00);
+                    }
+                    // Reset number color to green
+                    if (child.userData.isNumber && child.material) {
+                        const greenTexture = createTextTexture(
+                            (index + 1).toString(),
+                            120,
+                            '#00ff00',
+                            'rgba(0,0,0,0.7)'
+                        );
+                        child.material.map = greenTexture;
+                        child.material.emissive.setHex(0x00ff00);
+                        child.material.needsUpdate = true;
+                    }
+                });
+            });
+        }
+
+        // Track Editor Functions
+        function showTrackEditor() {
+            document.getElementById('mainMenuScreen').style.display = 'none';
+            document.getElementById('trackEditorScreen').style.display = 'block';
+            isEditorActive = true;
+            initEditor();
+        }
+
+        function initEditor() {
+            const container = document.getElementById('editorContainer');
+            container.innerHTML = '';
+            
+            // Create editor scene
+            editorScene = new THREE.Scene();
+            editorScene.background = new THREE.Color(0x222222);
+            
+            // Create editor camera
+            editorCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            editorCamera.position.set(0, 50, 100);
+            editorCamera.lookAt(0, 0, 0);
+            
+            // Create editor renderer
+            editorRenderer = new THREE.WebGLRenderer({ antialias: true });
+            editorRenderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(editorRenderer.domElement);
+            
+            // Add lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            editorScene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(50, 100, 50);
+            editorScene.add(directionalLight);
+            
+            // Add ground
+            const groundGeometry = new THREE.PlaneGeometry(500, 500);
+            const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x2d5016 });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            editorScene.add(ground);
+            
+            // Add grid helper
+            const gridHelper = new THREE.GridHelper(500, 50, 0x444444, 0x222222);
+            editorScene.add(gridHelper);
+            
+            // Event listeners for editor
+            editorRenderer.domElement.addEventListener('click', onEditorClick);
+            editorRenderer.domElement.addEventListener('contextmenu', onEditorRightClick);
+            editorRenderer.domElement.addEventListener('mousemove', onEditorMouseMove);
+            editorRenderer.domElement.addEventListener('wheel', onEditorWheel);
+            
+            // Load saved track if exists
+            const saved = localStorage.getItem('customTrack');
+            if (saved) {
+                editorPoints = JSON.parse(saved);
+                updateEditorDisplay();
+            }
+            
+            animateEditor();
+        }
+
+        function onEditorClick(event) {
+            if (!isEditorActive) return;
+            
+            editorMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            editorMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            editorRaycaster.setFromCamera(editorMouse, editorCamera);
+            const intersects = editorRaycaster.intersectObjects(editorPointMeshes);
+            
+            if (intersects.length > 0) {
+                editorSelectedPoint = intersects[0].object.userData.pointIndex;
+                editorMode = 'edit';
+                document.getElementById('editorMode').textContent = 'Edit';
+            } else {
+                const groundIntersects = editorRaycaster.intersectObject(editorScene.children.find(c => c.type === 'Mesh' && c.material && c.material.color && c.material.color.r < 0.3));
+                if (groundIntersects.length > 0) {
+                    const point = groundIntersects[0].point;
+                    editorPoints.push({x: point.x, y: point.y + 2, z: point.z});
+                    updateEditorDisplay();
+                }
+            }
+        }
+
+        function onEditorRightClick(event) {
+            event.preventDefault();
+            if (!isEditorActive) return;
+            
+            editorMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            editorMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            editorRaycaster.setFromCamera(editorMouse, editorCamera);
+            const intersects = editorRaycaster.intersectObjects(editorPointMeshes);
+            
+            if (intersects.length > 0) {
+                const index = intersects[0].object.userData.pointIndex;
+                editorPoints.splice(index, 1);
+                updateEditorDisplay();
+            }
+        }
+
+        function onEditorMouseMove(event) {
+            if (!isEditorActive || editorSelectedPoint === null) return;
+            
+            editorMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            editorMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            editorRaycaster.setFromCamera(editorMouse, editorCamera);
+            const ground = editorScene.children.find(c => c.type === 'Mesh' && c.material && c.material.color && c.material.color.r < 0.3);
+            if (ground) {
+                const groundIntersects = editorRaycaster.intersectObject(ground);
+                if (groundIntersects.length > 0) {
+                    const point = groundIntersects[0].point;
+                    editorPoints[editorSelectedPoint] = {x: point.x, y: point.y + 2, z: point.z};
+                    updateEditorDisplay();
+                }
+            }
+        }
+
+        function onEditorWheel(event) {
+            if (!isEditorActive || editorSelectedPoint === null) return;
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? -0.5 : 0.5;
+            editorPoints[editorSelectedPoint].y += delta;
+            updateEditorDisplay();
+        }
+
+        function updateEditorDisplay() {
+            editorPointMeshes.forEach(mesh => editorScene.remove(mesh));
+            editorPointMeshes = [];
+            
+            editorPoints.forEach((point, index) => {
+                const geometry = new THREE.SphereGeometry(1, 16, 16);
+                const material = new THREE.MeshStandardMaterial({ 
+                    color: index === editorSelectedPoint ? 0xffff00 : 0x00ff00,
+                    emissive: index === editorSelectedPoint ? 0xffff00 : 0x00ff00
+                });
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(point.x, point.y, point.z);
+                mesh.userData.pointIndex = index;
+                editorPointMeshes.push(mesh);
+                editorScene.add(mesh);
+            });
+            
+            if (editorPoints.length > 1) {
+                const lineGeometry = new THREE.BufferGeometry();
+                const vertices = [];
+                editorPoints.forEach(point => {
+                    vertices.push(point.x, point.y, point.z);
+                });
+                lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                editorScene.add(line);
+            }
+            
+            document.getElementById('editorPointCount').textContent = editorPoints.length;
+        }
+
+        function editorAddPoint() {
+            editorMode = 'add';
+            editorSelectedPoint = null;
+            document.getElementById('editorMode').textContent = 'Add';
+        }
+
+        function editorDeletePoint() {
+            editorMode = 'delete';
+            document.getElementById('editorMode').textContent = 'Delete';
+        }
+
+        function editorClearTrack() {
+            if (confirm('Clear all points?')) {
+                editorPoints = [];
+                editorSelectedPoint = null;
+                updateEditorDisplay();
+            }
+        }
+
+        function editorTestTrack() {
+            if (editorPoints.length < 10) {
+                alert('Track needs at least 10 points!');
+                return;
+            }
+            
+            const path = editorPoints.map(p => new THREE.Vector3(p.x, p.y, p.z));
+            document.getElementById('trackEditorScreen').style.display = 'none';
+            isEditorActive = false;
+            resetScene();
+            track = path;
+            createTrackFromPath(path);
+            currentLevel = 0;
+            startGame();
+        }
+
+        function createTrackFromPath(path) {
+            const trackWidth = 8;
+            const trackGeometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const normals = [];
+            const indices = [];
+
+            for (let i = 0; i < path.length - 1; i++) {
+                const p1 = path[i];
+                const p2 = path[i + 1];
+                const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
+                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
+                
+                const halfWidth = trackWidth / 2;
+                const v1 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(halfWidth));
+                const v2 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(-halfWidth));
+                const v3 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(halfWidth));
+                const v4 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(-halfWidth));
+
+                const baseIndex = vertices.length / 3;
+                vertices.push(v1.x, v1.y, v1.z);
+                vertices.push(v2.x, v2.y, v2.z);
+                vertices.push(v3.x, v3.y, v3.z);
+                vertices.push(v4.x, v4.y, v4.z);
+
+                indices.push(baseIndex, baseIndex + 1, baseIndex + 2);
+                indices.push(baseIndex + 1, baseIndex + 3, baseIndex + 2);
+                normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
+            }
+
+            trackGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            trackGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+            trackGeometry.setIndex(indices);
+
+            const trackMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x666666,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const trackMesh = new THREE.Mesh(trackGeometry, trackMaterial);
+            trackMesh.receiveShadow = true;
+            scene.add(trackMesh);
+            
+            createBarriers(path, trackWidth);
+            createCheckpoints(path);
+            createFinishLine(path[path.length - 1]);
+        }
+
+        function editorSaveTrack() {
+            if (editorPoints.length < 10) {
+                alert('Track needs at least 10 points!');
+                return;
+            }
+            localStorage.setItem('customTrack', JSON.stringify(editorPoints));
+            alert('Track saved!');
+        }
+
+        function editorLoadTrack() {
+            const saved = localStorage.getItem('customTrack');
+            if (saved) {
+                editorPoints = JSON.parse(saved);
+                updateEditorDisplay();
+                alert('Track loaded!');
+            } else {
+                alert('No saved track found!');
+            }
+        }
+
+        // Initialize game
+        init();
+        loadProgress(); // Load saved progress
+        animate();
+    </script>
+</body>
+</html>
