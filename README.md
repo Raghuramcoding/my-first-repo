@@ -1,2 +1,2 @@
 # my-first-repo
-my first things i coded ad my first time using github
+my first things i coded and my first time using github
