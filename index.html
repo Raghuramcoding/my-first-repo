@@ -3,201 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRACKMANIA ULTIMATE</title>
+    <title>3D Arcade Racing - Fixed</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Arial Black', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; overflow: hidden; background: #000; }
+        #gameContainer { width: 100vw; height: 100vh; position: relative; }
         #ui {
-            position: absolute; bottom: 30px; right: 30px; color: #fff;
-            text-align: right; z-index: 100; pointer-events: none;
+            position: absolute; top: 20px; left: 20px; color: white;
+            z-index: 100; background: rgba(0, 0, 0, 0.5);
+            padding: 15px; border-radius: 10px; display: none;
         }
-        #speedNum { font-size: 80px; font-style: italic; color: #00ffff; text-shadow: 0 0 20px #00ffff; }
-        #speedUnit { font-size: 20px; color: #fff; }
-        #boostBar {
-            width: 200px; height: 10px; background: rgba(255,255,255,0.2);
-            margin-top: 10px; border: 1px solid #00ffff;
+        #speed { font-size: 24px; font-weight: bold; color: #00ff00; }
+        #mainMenuScreen {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.9); z-index: 3000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        #boostFill { width: 0%; height: 100%; background: #00ffff; transition: width 0.1s; }
-        #menu {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, #111 0%, #000 100%);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000;
+        .menu-button {
+            background: linear-gradient(45deg, #00ff00, #00cc00);
+            color: #000; border: none; padding: 20px 40px;
+            font-size: 1.5em; border-radius: 30px; cursor: pointer;
+            margin: 15px; font-weight: bold; min-width: 250px;
         }
-        .btn {
-            background: #00ffff; color: #000; border: none; padding: 20px 60px;
-            font-size: 24px; cursor: pointer; clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
-            transition: 0.3s; font-weight: bold;
-        }
-        .btn:hover { transform: scale(1.1); background: #fff; box-shadow: 0 0 30px #00ffff; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div id="menu">
-        <h1 style="color: #fff; font-size: 80px; margin-bottom: 20px; font-style: italic;">TRACKMANIA <span style="color:#00ffff">EVO</span></h1>
-        <button class="btn" onclick="startRace()">START RACE</button>
+    <div id="gameContainer"></div>
+    
+    <div id="ui">
+        <div>Speed: <span id="speed">0</span> km/h</div>
+        <div>Time: <span id="time">0.0</span>s</div>
     </div>
 
-    <div id="ui" class="hidden">
-        <div id="speedNum">0</div>
-        <div id="speedUnit">KM/H</div>
-        <div id="boostBar"><div id="boostFill"></div></div>
+    <div id="mainMenuScreen">
+        <h1 style="color: #00ff00; margin-bottom: 50px;">🏎️ ARCADE RACING</h1>
+        <button class="menu-button" onclick="startQuickRace()">QUICK RACE</button>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, car, trackMesh;
-        let speed = 0, rotation = 0, boost = 0;
-        let keys = {};
-        let gameActive = false;
-        let trackPoints = [];
+        let scene, camera, renderer, car;
+        let track = [], checkpoints = [];
+        let gameStarted = false, startTime = 0, keys = {};
+        
+        const carPhysics = {
+            position: new THREE.Vector3(0, 2, 0),
+            velocity: new THREE.Vector3(0, 0, 0),
+            rotation: 0,
+            speed: 0,
+            maxSpeed: 2.0,
+            accel: 0.05,
+            friction: 0.96
+        };
 
         function init() {
             scene = new THREE.Scene();
-            scene.fog = new THREE.Fog(0x000000, 100, 1500);
-
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+            scene.background = new THREE.Color(0x87CEEB);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
             
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            document.body.appendChild(renderer.domElement);
+            document.getElementById('gameContainer').appendChild(renderer.domElement);
 
-            const ambient = new THREE.AmbientLight(0xffffff, 0.4);
-            scene.add(ambient);
-
-            const sun = new THREE.DirectionalLight(0x00ffff, 1);
-            sun.position.set(100, 200, 100);
-            scene.add(sun);
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(10, 20, 10);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040));
 
             window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
             window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
         }
 
         function createCar() {
+            if (car) scene.remove(car);
             car = new THREE.Group();
-            
-            // Body
             const body = new THREE.Mesh(
-                new THREE.BoxGeometry(2, 0.5, 4),
-                new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 1, roughness: 0.1 })
+                new THREE.BoxGeometry(2, 0.8, 4),
+                new THREE.MeshStandardMaterial({ color: 0x0066ff })
             );
             car.add(body);
-
-            // Underglow
-            const glow = new THREE.PointLight(0x00ffff, 2, 10);
-            glow.position.y = -0.5;
-            car.add(glow);
-
-            // Neon strips
-            const neonGeo = new THREE.BoxGeometry(2.1, 0.1, 4.1);
-            const neonMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-            const neon = new THREE.Mesh(neonGeo, neonMat);
-            neon.position.y = -0.2;
-            car.add(neon);
-
             scene.add(car);
         }
 
         function createTrack() {
             const points = [];
-            for (let i = 0; i < 500; i++) {
-                const t = i * 0.1;
-                let x = Math.sin(t * 0.5) * 100;
-                let y = 0;
-                let z = i * 20;
-
-                // Add a Loop-the-loop
-                if (i > 100 && i < 150) {
-                    const loopT = (i - 100) / 50 * Math.PI * 2;
-                    y = Math.sin(loopT) * 40 + 40;
-                    z = 100 * 20 + Math.cos(loopT) * 40;
-                } 
-                // Add a massive jump
-                else if (i > 300 && i < 320) {
-                    y = (i - 300) * 5;
-                }
-
-                points.push(new THREE.Vector3(x, y, z));
+            for (let i = 0; i < 100; i++) {
+                points.push(new THREE.Vector3(Math.sin(i * 0.2) * 20, 0, i * 10));
             }
-            trackPoints = points;
+            track = points;
 
-            const curve = new THREE.CatmullRomCurve3(points);
-            const tubeGeo = new THREE.TubeGeometry(curve, 500, 10, 8, false);
-            const tubeMat = new THREE.MeshStandardMaterial({ 
-                color: 0x222222, 
-                wireframe: false,
-                side: THREE.DoubleSide 
-            });
+            const shape = new THREE.Shape();
+            shape.moveTo(-5, 0); shape.lineTo(5, 0);
             
-            // Road markers
-            const roadGeo = new THREE.TubeGeometry(curve, 500, 10.1, 8, false);
-            const roadMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, wireframe: true, transparent: true, opacity: 0.1 });
-            
-            scene.add(new THREE.Mesh(tubeGeo, tubeMat));
-            scene.add(new THREE.Mesh(roadGeo, roadMat));
-
-            // Boost Pads
-            for(let i = 50; i < points.length; i += 100) {
-                const pad = new THREE.Mesh(
-                    new THREE.PlaneGeometry(20, 10),
-                    new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide })
-                );
-                pad.position.copy(points[i]).y += 0.5;
-                pad.rotation.x = Math.PI/2;
-                scene.add(pad);
-            }
+            const extrudeSettings = { steps: 100, bevelEnabled: false, extrudePath: new THREE.CatmullRomCurve3(points) };
+            const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x333333 }));
+            scene.add(mesh);
         }
 
-        function startRace() {
-            document.getElementById('menu').classList.add('hidden');
-            document.getElementById('ui').classList.remove('hidden');
+        function startQuickRace() {
+            document.getElementById('mainMenuScreen').classList.add('hidden');
+            document.getElementById('ui').style.display = 'block';
+            
             createTrack();
             createCar();
-            gameActive = true;
+            
+            // Spawn car at start of track
+            carPhysics.position.copy(track[0]).y += 1;
+            carPhysics.velocity.set(0,0,0);
+            carPhysics.speed = 0;
+            
+            gameStarted = true;
+            startTime = Date.now();
         }
 
         function update() {
-            if (!gameActive) return;
+            if (!gameStarted) return;
 
-            // Physics
-            if (keys['w']) speed += 2.5;
-            if (keys['s']) speed -= 5;
-            speed *= 0.98; // Friction
+            // Simple movement
+            if (keys['w']) carPhysics.speed += carPhysics.accel;
+            if (keys['s']) carPhysics.speed -= carPhysics.accel;
+            carPhysics.speed *= carPhysics.friction;
 
-            if (keys['a']) rotation += 0.04;
-            if (keys['d']) rotation -= 0.04;
+            if (keys['a']) carPhysics.rotation += 0.04;
+            if (keys['d']) carPhysics.rotation -= 0.04;
 
-            // Drift logic
-            const drift = Math.sin(rotation) * (speed * 0.02);
+            const dir = new THREE.Vector3(Math.sin(carPhysics.rotation), 0, Math.cos(carPhysics.rotation));
+            carPhysics.position.add(dir.multiplyScalar(carPhysics.speed));
             
-            car.position.z += Math.cos(rotation) * (speed * 0.1);
-            car.position.x += Math.sin(rotation) * (speed * 0.1);
-            car.rotation.y = rotation;
+            car.position.copy(carPhysics.position);
+            car.rotation.y = carPhysics.rotation;
 
-            // Follow track height (Simple version)
-            const trackIdx = Math.floor(car.position.z / 20);
-            if (trackPoints[trackIdx]) {
-                car.position.y = THREE.MathUtils.lerp(car.position.y, trackPoints[trackIdx].y + 1, 0.1);
-            }
+            // Camera
+            const camOffset = new THREE.Vector3(0, 5, -15).applyAxisAngle(new THREE.Vector3(0, 1, 0), carPhysics.rotation);
+            camera.position.lerp(carPhysics.position.clone().add(camOffset), 0.1);
+            camera.lookAt(carPhysics.position);
 
-            // Camera: Dynamic FOV & Shake
-            camera.fov = 75 + (speed * 0.1);
-            camera.updateProjectionMatrix();
-
-            const camOffset = new THREE.Vector3(0, 5, -15).applyAxisAngle(new THREE.Vector3(0, 1, 0), rotation);
-            camera.position.lerp(car.position.clone().add(camOffset), 0.1);
-            
-            // Screen Shake at high speed
-            if (speed > 200) {
-                camera.position.x += (Math.random() - 0.5) * (speed * 0.001);
-                camera.position.y += (Math.random() - 0.5) * (speed * 0.001);
-            }
-            
-            camera.lookAt(car.position);
-
-            // UI
-            document.getElementById('speedNum').innerText = Math.floor(speed);
-            document.getElementById('boostFill').style.width = (speed / 5) + "%";
+            document.getElementById('speed').textContent = Math.round(carPhysics.speed * 100);
+            document.getElementById('time').textContent = ((Date.now() - startTime)/1000).toFixed(1);
         }
 
         function animate() {
