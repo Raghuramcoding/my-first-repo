@@ -1,424 +1,65 @@
 <h1> Welcome to my site where i display my games that i have coded in the past.</h1>
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Arcade Racing - Trackmania Style</title>
+    <title>3D Arcade Racing - Fixed Physics</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
-            background: #000;
-        }
-
-        #gameContainer {
-            width: 100vw;
-            height: 100vh;
-            position: relative;
-        }
-
-        #ui {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: white;
-            font-size: 18px;
-            z-index: 100;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        #ui div {
-            margin: 5px 0;
-        }
-
-        #speed {
-            font-size: 24px;
-            font-weight: bold;
-            color: #00ff00;
-        }
-
-        #crashWarning {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(255, 0, 0, 0.9);
-            color: white;
-            padding: 20px 40px;
-            border-radius: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            z-index: 200;
-            display: none;
-            text-align: center;
-            border: 3px solid #ff0000;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
-        }
-
-        #startScreen {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
-            color: white;
-            padding: 40px;
-            border-radius: 15px;
-            text-align: center;
-            z-index: 1000;
-            border: 2px solid #00ff00;
-        }
-
-        #startScreen h1 {
-            font-size: 3em;
-            margin-bottom: 20px;
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00;
-        }
-
-        #startScreen button {
-            background: linear-gradient(45deg, #00ff00, #00cc00);
-            color: #000;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.3em;
-            border-radius: 30px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-
-        #startScreen button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 255, 0, 0.4);
-        }
-
-        #controls {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            color: white;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 14px;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        #levelSelectScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 2000;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        #levelSelectScreen h1 {
-            text-align: center;
-            color: #00ff00;
-            font-size: 3em;
-            margin-bottom: 20px;
-            text-shadow: 0 0 10px #00ff00;
-        }
-
-        .level-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .level-button {
-            background: linear-gradient(135deg, #333, #222);
-            border: 2px solid #555;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .level-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 20px rgba(0, 255, 0, 0.5);
-            border-color: #00ff00;
-        }
-
-        .level-button.locked {
-            opacity: 0.5;
-            cursor: not-allowed;
-            background: linear-gradient(135deg, #222, #111);
-        }
-
-        .level-button.completed {
-            border-color: #ffff00;
-            background: linear-gradient(135deg, #443, #332);
-        }
-
-        .level-number {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .level-name {
-            font-size: 0.9em;
-            color: #aaa;
-            margin-bottom: 5px;
-        }
-
-        .level-time {
-            font-size: 0.8em;
-            color: #00ff00;
-        }
-
-        .level-locked {
-            font-size: 0.8em;
-            color: #ff0000;
-        }
-
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: linear-gradient(45deg, #666, #444);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-        }
-
-        .back-button:hover {
-            background: linear-gradient(45deg, #777, #555);
-        }
-
-        #mainMenuScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 3000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .menu-button {
-            background: linear-gradient(45deg, #00ff00, #00cc00);
-            color: #000;
-            border: none;
-            padding: 20px 40px;
-            font-size: 1.5em;
-            border-radius: 30px;
-            cursor: pointer;
-            margin: 15px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            min-width: 250px;
-        }
-
-        .menu-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.5);
-        }
-
-        #trackEditorScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.95);
-            z-index: 4000;
-            display: none;
-        }
-
-        .editor-toolbar {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 10px;
-            color: white;
-            z-index: 4001;
-        }
-
-        .editor-toolbar button {
-            background: linear-gradient(45deg, #666, #444);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .editor-toolbar button:hover {
-            background: linear-gradient(45deg, #777, #555);
-        }
-
-        .editor-info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 10px;
-            color: white;
-            z-index: 4001;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; overflow: hidden; background: #000; }
+        #gameContainer { width: 100vw; height: 100vh; position: relative; }
+        #ui { position: absolute; top: 20px; left: 20px; color: white; font-size: 18px; z-index: 100; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 10px; }
+        #ui div { margin: 5px 0; }
+        #speed { font-size: 24px; font-weight: bold; color: #00ff00; }
+        #crashWarning { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 0, 0, 0.9); color: white; padding: 20px 40px; border-radius: 10px; font-size: 24px; font-weight: bold; z-index: 200; display: none; text-align: center; border: 3px solid #ff0000; box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+        #startScreen { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); color: white; padding: 40px; border-radius: 15px; text-align: center; z-index: 1000; border: 2px solid #00ff00; }
+        #startScreen h1 { font-size: 3em; margin-bottom: 20px; color: #00ff00; text-shadow: 0 0 10px #00ff00; }
+        #startScreen button { background: linear-gradient(45deg, #00ff00, #00cc00); color: #000; border: none; padding: 15px 30px; font-size: 1.3em; border-radius: 30px; cursor: pointer; margin-top: 20px; font-weight: bold; transition: all 0.3s ease; }
+        #controls { position: absolute; bottom: 20px; left: 20px; color: white; background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 10px; font-size: 14px; }
+        .hidden { display: none; }
+        #levelSelectScreen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 2000; overflow-y: auto; padding: 20px; }
+        #levelSelectScreen h1 { text-align: center; color: #00ff00; font-size: 3em; margin-bottom: 20px; }
+        .level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .level-button { background: linear-gradient(135deg, #333, #222); border: 2px solid #555; color: white; padding: 20px; border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.3s ease; }
+        .level-button:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0, 255, 0, 0.5); border-color: #00ff00; }
+        .level-button.locked { opacity: 0.5; cursor: not-allowed; }
+        .back-button { position: absolute; top: 20px; left: 20px; background: #444; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        #mainMenuScreen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .menu-button { background: linear-gradient(45deg, #00ff00, #00cc00); color: #000; border: none; padding: 20px 40px; font-size: 1.5em; border-radius: 30px; cursor: pointer; margin: 15px; font-weight: bold; min-width: 250px; }
     </style>
 </head>
 <body>
     <div id="gameContainer"></div>
-    
     <div id="ui">
         <div>Speed: <span id="speed">0</span> km/h</div>
         <div>Time: <span id="time">0.0</span>s</div>
         <div>Checkpoint: <span id="checkpoint">0</span> / <span id="totalCheckpoints">0</span></div>
-        <div style="margin-top: 10px; font-size: 14px; color: #ffaa00;">Press R to Reset</div>
     </div>
-
-    <div id="crashWarning">
-        <div>CRASHED!</div>
-        <div style="font-size: 16px; margin-top: 10px;">Resetting to last checkpoint...</div>
-    </div>
-
+    <div id="crashWarning">CRASHED!</div>
     <div id="mainMenuScreen">
-        <h1 style="font-size: 4em; color: #00ff00; text-shadow: 0 0 20px #00ff00; margin-bottom: 50px;">🏎️ 3D ARCADE RACING</h1>
+        <h1 style="font-size: 4em; color: #00ff00; margin-bottom: 50px;">🏎️ 3D ARCADE RACING</h1>
         <button class="menu-button" onclick="showLevelSelect()">CAMPAIGN</button>
         <button class="menu-button" onclick="startQuickRace()">QUICK RACE</button>
-        <button class="menu-button" onclick="showTrackEditor()">TRACK EDITOR</button>
-        <div style="margin-top: 30px; color: #aaa; font-size: 0.9em;">
-            Type "unlockall" to unlock all tracks
-        </div>
     </div>
-
     <div id="startScreen" class="hidden">
-        <h1>🏎️ 3D ARCADE RACING</h1>
-        <p style="font-size: 1.2em; margin-bottom: 20px;">
-            Trackmania-style arcade racing!<br>
-            Navigate the track and beat your best time!
-        </p>
-        <button onclick="showLevelSelect()">CAMPAIGN</button>
-        <button onclick="startGame()" style="margin-left: 10px;">QUICK RACE</button>
-            <div id="controls" style="position: relative; margin-top: 20px; background: transparent; padding: 10px;">
-            <strong>Controls:</strong><br>
-            ⬆️ W / ↑ - Accelerate<br>
-            ⬇️ S / ↓ - Brake/Reverse<br>
-            ⬅️ A / ← - Turn Left<br>
-            ➡️ D / → - Turn Right<br>
-            Space - Handbrake<br>
-            R - Reset Car<br>
-            ESC - Back to Menu
-        </div>
+        <h1>READY?</h1>
+        <button onclick="startGame()">START</button>
     </div>
-
     <div id="levelSelectScreen" class="hidden">
         <button class="back-button" onclick="showMainMenu()">← Back</button>
         <h1>SELECT TRACK</h1>
         <div class="level-grid" id="levelGrid"></div>
     </div>
 
-    <div id="trackEditorScreen">
-        <div class="editor-toolbar">
-            <h3 style="margin-top: 0;">Track Editor</h3>
-            <button onclick="editorAddPoint()">Add Point</button>
-            <button onclick="editorDeletePoint()">Delete Point</button>
-            <button onclick="editorClearTrack()">Clear Track</button>
-            <button onclick="editorTestTrack()">Test Track</button>
-            <button onclick="editorSaveTrack()">Save Track</button>
-            <button onclick="editorLoadTrack()">Load Track</button>
-            <button onclick="showMainMenu()">Back to Menu</button>
-            <div style="margin-top: 15px; font-size: 0.9em;">
-                <strong>Controls:</strong><br>
-                Click: Add/Move Point<br>
-                Right Click: Delete Point<br>
-                Mouse Wheel: Adjust Height<br>
-                T: Test Track<br>
-                S: Save Track<br>
-                L: Load Track
-            </div>
-        </div>
-        <div class="editor-info">
-            <div>Points: <span id="editorPointCount">0</span></div>
-            <div>Mode: <span id="editorMode">Add</span></div>
-        </div>
-        <div id="editorContainer" style="width: 100%; height: 100%;"></div>
-    </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Game state
-        let scene, camera, renderer;
-        let car, carBody, carMesh;
-        let track = [];
-        let checkpoints = [];
-        let gameStarted = false;
-        let startTime = 0;
-        let currentCheckpoint = 0;
-        let keys = {};
-        let lastCheckpointPosition = new THREE.Vector3(0, 2, 0);
-        let resetCooldown = 0;
-        let gameStartTime = 0; 
-        let currentLevel = 0; 
-        let trackProgress = {}; 
-        let secretCode = ''; 
-        const SECRET_CODE = 'unlockall'; 
-        
-        // Track editor state
-        let editorMode = 'add'; 
-        let editorPoints = []; 
-        let editorSelectedPoint = null;
-        let editorScene = null;
-        let editorCamera = null;
-        let editorRenderer = null;
-        let editorMouse = new THREE.Vector2();
-        let editorRaycaster = new THREE.Raycaster();
-        let editorPointMeshes = [];
-        let isEditorActive = false;
-        
-        const trackConfigs = [];
-        for (let i = 0; i < 25; i++) {
-            trackConfigs.push({
-                name: `Track ${i + 1}`,
-                segments: 200 + Math.floor(Math.random() * 200),
-                complexity: 1 + (i * 0.15), 
-                turns: 3 + Math.floor(i / 5),
-                jumps: Math.floor(i / 8) + 1,
-                radius: 40 + (i * 2),
-                difficulty: i < 5 ? 'Easy' : i < 15 ? 'Medium' : 'Hard'
-            });
-        }
-        
+        let scene, camera, renderer, car, carBody;
+        let track = [], checkpoints = [];
+        let gameStarted = false, startTime = 0, currentCheckpoint = 0;
+        let keys = {}, lastCheckpointPosition = new THREE.Vector3(0, 2, 0);
+        let currentLevel = 0, trackProgress = {};
+
         const carPhysics = {
             position: new THREE.Vector3(0, 2, 0),
             velocity: new THREE.Vector3(0, 0, 0),
@@ -427,771 +68,186 @@
             maxSpeed: 400,
             acceleration: 0.02,
             deceleration: 0.95,
-            turnSpeed: 0.04, 
-            friction: 0.995,
-            airControl: 0.5 
+            turnSpeed: 0.04,
+            friction: 0.99,
+            airControl: 0.3,
+            gravity: 0.015
         };
 
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x87CEEB);
             scene.fog = new THREE.Fog(0x87CEEB, 100, 1000);
-
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-            camera.position.set(0, 10, 20);
-
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
             document.getElementById('gameContainer').appendChild(renderer.domElement);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-            scene.add(ambientLight);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const sun = new THREE.DirectionalLight(0xffffff, 0.8);
+            sun.position.set(50, 100, 50);
+            sun.castShadow = true;
+            scene.add(sun);
 
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(50, 100, 50);
-            directionalLight.castShadow = true;
-            directionalLight.shadow.camera.left = -200;
-            directionalLight.shadow.camera.right = 200;
-            directionalLight.shadow.camera.top = 200;
-            directionalLight.shadow.camera.bottom = -200;
-            scene.add(directionalLight);
-
-            const groundGeometry = new THREE.PlaneGeometry(2000, 2000);
-            const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x2d5016 });
-            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ color: 0x2d5016 }));
             ground.rotation.x = -Math.PI / 2;
             ground.receiveShadow = true;
             scene.add(ground);
 
             createCar();
-
-            window.addEventListener('resize', onWindowResize);
-            document.addEventListener('keydown', onKeyDown);
-            document.addEventListener('keyup', onKeyUp);
-        }
-
-        function createTrack(config = null) {
-            const trackWidth = 8;
-            const cfg = config || {
-                segments: 300,
-                complexity: 1,
-                turns: 5,
-                jumps: 2,
-                radius: 60
-            };
-            
-            const path = [];
-            for (let i = 0; i <= cfg.segments; i++) {
-                const t = i / cfg.segments;
-                const angle = t * Math.PI * cfg.turns * cfg.complexity + 
-                             Math.sin(t * Math.PI * 10 * cfg.complexity) * (0.4 + cfg.complexity * 0.2);
-                const radius = cfg.radius + Math.sin(t * Math.PI * 8 * cfg.complexity) * (20 + cfg.complexity * 10);
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
-                
-                let y = 0;
-                const jumpCount = cfg.jumps;
-                for (let j = 0; j < jumpCount; j++) {
-                    const jumpStart = (j + 1) / (jumpCount + 2);
-                    const jumpEnd = jumpStart + 0.05;
-                    if (t > jumpStart && t < jumpEnd) {
-                        y += Math.sin((t - jumpStart) * Math.PI * 20) * (10 + cfg.complexity * 5);
-                    }
-                }
-                y += Math.sin(t * Math.PI * 6 * cfg.complexity) * (3 + cfg.complexity * 2) + 
-                     Math.sin(t * Math.PI * 12 * cfg.complexity) * (1 + cfg.complexity);
-                
-                path.push(new THREE.Vector3(x, y, z));
-            }
-
-            const trackGeometry = new THREE.BufferGeometry();
-            const vertices = [];
-            const normals = [];
-            const indices = [];
-
-            for (let i = 0; i < path.length - 1; i++) {
-                const p1 = path[i];
-                const p2 = path[i + 1];
-                const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
-                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
-                
-                const halfWidth = trackWidth / 2;
-                const v1 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(halfWidth));
-                const v2 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(-halfWidth));
-                const v3 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(halfWidth));
-                const v4 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(-halfWidth));
-
-                const baseIndex = vertices.length / 3;
-                vertices.push(v1.x, v1.y, v1.z);
-                vertices.push(v2.x, v2.y, v2.z);
-                vertices.push(v3.x, v3.y, v3.z);
-                vertices.push(v4.x, v4.y, v4.z);
-
-                indices.push(baseIndex, baseIndex + 1, baseIndex + 2);
-                indices.push(baseIndex + 1, baseIndex + 3, baseIndex + 2);
-
-                normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0);
-            }
-
-            trackGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-            trackGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-            trackGeometry.setIndex(indices);
-            trackGeometry.computeBoundingBox();
-
-            const trackMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0x666666,
-                roughness: 0.9,
-                metalness: 0.1
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
             });
-            
-            const edgeLineGeometry = new THREE.BufferGeometry();
-            const edgeVertices = [];
-            const edgeIndices = [];
-            
-            for (let i = 0; i < path.length - 1; i++) {
-                const p1 = path[i];
-                const p2 = path[i + 1];
-                const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
-                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
-                
-                const lineWidth = 0.2;
-                const halfWidth = trackWidth / 2;
-                
-                const left1 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(halfWidth));
-                const left2 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(halfWidth + lineWidth));
-                const left3 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(halfWidth));
-                const left4 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(halfWidth + lineWidth));
-                
-                const right1 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(-halfWidth));
-                const right2 = new THREE.Vector3().addVectors(p1, right.clone().multiplyScalar(-halfWidth - lineWidth));
-                const right3 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(-halfWidth));
-                const right4 = new THREE.Vector3().addVectors(p2, right.clone().multiplyScalar(-halfWidth - lineWidth));
-                
-                const baseIndex = edgeVertices.length / 3;
-                
-                edgeVertices.push(left1.x, left1.y + 0.02, left1.z);
-                edgeVertices.push(left2.x, left2.y + 0.02, left2.z);
-                edgeVertices.push(left3.x, left3.y + 0.02, left3.z);
-                edgeVertices.push(left4.x, left4.y + 0.02, left4.z);
-                
-                edgeIndices.push(baseIndex, baseIndex + 1, baseIndex + 2);
-                edgeIndices.push(baseIndex + 1, baseIndex + 3, baseIndex + 2);
-                
-                edgeVertices.push(right1.x, right1.y + 0.02, right1.z);
-                edgeVertices.push(right2.x, right2.y + 0.02, right2.z);
-                edgeVertices.push(right3.x, right3.y + 0.02, right3.z);
-                edgeVertices.push(right4.x, right4.y + 0.02, right4.z);
-                
-                edgeIndices.push(baseIndex + 4, baseIndex + 5, baseIndex + 6);
-                edgeIndices.push(baseIndex + 5, baseIndex + 7, baseIndex + 6);
-            }
-            
-            edgeLineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));
-            edgeLineGeometry.setIndex(edgeIndices);
-            
-            const edgeLineMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xffffff,
-                emissive: 0xffffff,
-                emissiveIntensity: 0.3
-            });
-            const edgeLines = new THREE.Mesh(edgeLineGeometry, edgeLineMaterial);
-            scene.add(edgeLines);
-            
-            const centerLineGeometry = new THREE.BufferGeometry();
-            const centerVertices = [];
-            const centerIndices = [];
-            const dashLength = 2;
-            const gapLength = 1.5;
-            let currentDistance = 0;
-            
-            for (let i = 0; i < path.length - 1; i++) {
-                const p1 = path[i];
-                const p2 = path[i + 1];
-                const segmentLength = p1.distanceTo(p2);
-                const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
-                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
-                
-                let segmentDistance = 0;
-                while (segmentDistance < segmentLength) {
-                    const dashProgress = currentDistance % (dashLength + gapLength);
-                    if (dashProgress < dashLength) {
-                        const lineWidth = 0.25;
-                        const dashStart = p1.clone().add(dir.clone().multiplyScalar(segmentDistance));
-                        const dashEnd = p1.clone().add(dir.clone().multiplyScalar(Math.min(segmentDistance + dashLength - dashProgress, segmentLength)));
-                        
-                        const v1 = new THREE.Vector3().addVectors(dashStart, right.clone().multiplyScalar(lineWidth));
-                        const v2 = new THREE.Vector3().addVectors(dashStart, right.clone().multiplyScalar(-lineWidth));
-                        const v3 = new THREE.Vector3().addVectors(dashEnd, right.clone().multiplyScalar(lineWidth));
-                        const v4 = new THREE.Vector3().addVectors(dashEnd, right.clone().multiplyScalar(-lineWidth));
-                        
-                        const baseIndex = centerVertices.length / 3;
-                        centerVertices.push(v1.x, v1.y + 0.02, v1.z);
-                        centerVertices.push(v2.x, v2.y + 0.02, v2.z);
-                        centerVertices.push(v3.x, v3.y + 0.02, v3.z);
-                        centerVertices.push(v4.x, v4.y + 0.02, v4.z);
-                        
-                        centerIndices.push(baseIndex, baseIndex + 1, baseIndex + 2);
-                        centerIndices.push(baseIndex + 1, baseIndex + 3, baseIndex + 2);
-                    }
-                    segmentDistance += (dashLength + gapLength) - (currentDistance % (dashLength + gapLength));
-                    currentDistance += (dashLength + gapLength) - (currentDistance % (dashLength + gapLength));
-                    if (segmentDistance >= segmentLength) break;
-                }
-                currentDistance += segmentLength - Math.floor(segmentDistance / (dashLength + gapLength)) * (dashLength + gapLength);
-            }
-            
-            centerLineGeometry.setAttribute('position', new THREE.Float32BufferAttribute(centerVertices, 3));
-            centerLineGeometry.setIndex(centerIndices);
-            
-            const centerLineMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xffff00,
-                emissive: 0xffff00,
-                emissiveIntensity: 1.0 
-            });
-            const centerLine = new THREE.Mesh(centerLineGeometry, centerLineMaterial);
-            scene.add(centerLine);
-            const trackMesh = new THREE.Mesh(trackGeometry, trackMaterial);
-            trackMesh.receiveShadow = true;
-            scene.add(trackMesh);
-
-            createBarriers(path, trackWidth);
-            track = path;
-            createCheckpoints(path);
-            createFinishLine(path[path.length - 1]);
-        }
-        
-        function createFinishLine(position) {
-            const finishGeometry = new THREE.PlaneGeometry(18, 12);
-            const finishMaterial = new THREE.MeshStandardMaterial({ 
-                color: 0xffffff,
-                transparent: true,
-                opacity: 0.8
-            });
-            const finishLine = new THREE.Mesh(finishGeometry, finishMaterial);
-            finishLine.position.copy(position);
-            finishLine.position.y = position.y + 6;
-            const lastIndex = track.length - 1;
-            const secondLastIndex = Math.max(0, lastIndex - 1);
-            finishLine.rotation.y = Math.atan2(
-                track[lastIndex].x - track[secondLastIndex].x, 
-                track[lastIndex].z - track[secondLastIndex].z
-            );
-            finishLine.userData.isFinishLine = true;
-            scene.add(finishLine);
-            
-            const checkerSize = 2;
-            const checkerMaterial1 = new THREE.MeshStandardMaterial({ color: 0x000000 });
-            const checkerMaterial2 = new THREE.MeshStandardMaterial({ color: 0xffffff });
-            
-            for (let i = 0; i < 9; i++) {
-                for (let j = 0; j < 6; j++) {
-                    const checker = new THREE.Mesh(
-                        new THREE.PlaneGeometry(checkerSize, checkerSize),
-                        (i + j) % 2 === 0 ? checkerMaterial1 : checkerMaterial2
-                    );
-                    checker.position.set(
-                        position.x + (i - 4) * checkerSize,
-                        position.y + 6,
-                        position.z + (j - 3) * checkerSize
-                    );
-                    checker.rotation.y = finishLine.rotation.y;
-                    scene.add(checker);
-                }
-            }
-        }
-
-        function createBarriers(path, trackWidth) {
-            const barrierHeight = 2;
-            const barrierGeometry = new THREE.BoxGeometry(0.5, barrierHeight, 0.5);
-            const barrierMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-            
-            for (let i = 0; i < path.length; i += 5) {
-                const p = path[i];
-                const nextP = path[Math.min(i + 1, path.length - 1)];
-                const dir = new THREE.Vector3().subVectors(nextP, p).normalize();
-                const right = new THREE.Vector3(-dir.z, 0, dir.x).normalize();
-                const halfWidth = trackWidth / 2 + 0.5;
-                
-                const leftBarrier = new THREE.Mesh(barrierGeometry, barrierMaterial);
-                leftBarrier.position.copy(new THREE.Vector3().addVectors(p, right.clone().multiplyScalar(halfWidth)));
-                leftBarrier.position.y = p.y + barrierHeight / 2;
-                leftBarrier.castShadow = true;
-                scene.add(leftBarrier);
-                
-                const rightBarrier = new THREE.Mesh(barrierGeometry, barrierMaterial);
-                rightBarrier.position.copy(new THREE.Vector3().addVectors(p, right.clone().multiplyScalar(-halfWidth)));
-                rightBarrier.position.y = p.y + barrierHeight / 2;
-                rightBarrier.castShadow = true;
-                scene.add(rightBarrier);
-            }
-        }
-
-        function createTextTexture(text, fontSize = 64, color = '#ffffff', bgColor = 'rgba(0,0,0,0)') {
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.width = 256;
-            canvas.height = 256;
-            context.fillStyle = bgColor;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            context.font = `bold ${fontSize}px Arial`;
-            context.fillStyle = color;
-            context.textAlign = 'center';
-            context.textBaseline = 'middle';
-            context.fillText(text, canvas.width / 2, canvas.height / 2);
-            const texture = new THREE.CanvasTexture(canvas);
-            texture.needsUpdate = true;
-            return texture;
-        }
-
-        function createCheckpoints(path) {
-            for (let i = 50; i < path.length - 50; i += 50) {
-                const checkpointNumber = checkpoints.length + 1;
-                const checkpointGroup = new THREE.Group();
-                const archGeometry = new THREE.TorusGeometry(4, 0.3, 8, 16, Math.PI);
-                const archMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x00ff00,
-                    emissive: 0x00ff00,
-                    emissiveIntensity: 0.5,
-                    transparent: true,
-                    opacity: 0.8
-                });
-                
-                const leftArch = new THREE.Mesh(archGeometry, archMaterial);
-                leftArch.rotation.z = Math.PI / 2;
-                leftArch.position.set(-3, 0, 0);
-                checkpointGroup.add(leftArch);
-                
-                const rightArch = new THREE.Mesh(archGeometry, archMaterial);
-                rightArch.rotation.z = Math.PI / 2;
-                rightArch.position.set(3, 0, 0);
-                checkpointGroup.add(rightArch);
-                
-                const topArchGeometry = new THREE.TorusGeometry(3.5, 0.3, 8, 16);
-                const topArch = new THREE.Mesh(topArchGeometry, archMaterial);
-                topArch.rotation.x = Math.PI / 2;
-                topArch.position.set(0, 6, 0);
-                checkpointGroup.add(topArch);
-                
-                const hitboxGeometry = new THREE.BoxGeometry(8, 8, 1);
-                const hitboxMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x00ff00,
-                    transparent: true,
-                    opacity: 0.2,
-                    visible: true 
-                });
-                const hitbox = new THREE.Mesh(hitboxGeometry, hitboxMaterial);
-                hitbox.position.set(0, 4, 0);
-                hitbox.userData.isHitbox = true;
-                checkpointGroup.add(hitbox);
-                
-                const numberTexture = createTextTexture(checkpointNumber.toString(), 120, '#00ff00', 'rgba(0,0,0,0.7)');
-                const numberMaterial = new THREE.MeshStandardMaterial({
-                    map: numberTexture,
-                    transparent: true,
-                    emissive: 0x00ff00,
-                    emissiveIntensity: 0.5
-                });
-                const numberPlane = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), numberMaterial);
-                numberPlane.position.set(0, 4, 0.1);
-                numberPlane.userData.isNumber = true;
-                checkpointGroup.add(numberPlane);
-                
-                checkpointGroup.position.copy(path[i]);
-                checkpointGroup.position.y = path[i].y + 4;
-                const nextPoint = path[Math.min(i + 5, path.length - 1)];
-                const direction = new THREE.Vector3().subVectors(nextPoint, path[i]).normalize();
-                checkpointGroup.rotation.y = Math.atan2(direction.x, direction.z);
-                checkpointGroup.userData.isCheckpoint = true;
-                checkpointGroup.userData.index = checkpoints.length;
-                scene.add(checkpointGroup);
-                
-                checkpoints.push({
-                    mesh: checkpointGroup,
-                    hitbox: hitbox,
-                    position: path[i],
-                    passed: false,
-                    numberMesh: numberPlane
-                });
-            }
-            document.getElementById('totalCheckpoints').textContent = checkpoints.length;
+            document.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
+            document.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
         }
 
         function createCar() {
             car = new THREE.Group();
-            const bodyGeometry = new THREE.BoxGeometry(2, 0.8, 4);
-            const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0x0066ff });
-            carBody = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            carBody = new THREE.Mesh(new THREE.BoxGeometry(2, 0.8, 4), new THREE.MeshStandardMaterial({ color: 0x0066ff }));
             carBody.castShadow = true;
             car.add(carBody);
-
-            const roofGeometry = new THREE.BoxGeometry(1.5, 0.6, 2);
-            const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x0044aa });
-            const roof = new THREE.Mesh(roofGeometry, roofMaterial);
-            roof.position.y = 0.7;
-            roof.castShadow = true;
-            car.add(roof);
-
-            const wheelGeometry = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
-            const wheelMaterial = new THREE.MeshStandardMaterial({ color: 0x222222 });
-            const wheelPositions = [[1.2, -0.4, 1.2], [-1.2, -0.4, 1.2], [1.2, -0.4, -1.2], [-1.2, -0.4, -1.2]];
-            wheelPositions.forEach(pos => {
-                const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-                wheel.rotation.z = Math.PI / 2;
-                wheel.position.set(pos[0], pos[1], pos[2]);
-                wheel.castShadow = true;
-                car.add(wheel);
-            });
-
-            const headlightGeometry = new THREE.SphereGeometry(0.15, 8, 8);
-            const headlightMaterial = new THREE.MeshStandardMaterial({ color: 0xffffaa, emissive: 0xffffaa, emissiveIntensity: 1.5 });
-            const leftH = new THREE.Mesh(headlightGeometry, headlightMaterial); leftH.position.set(0.6, 0.2, 2.05); car.add(leftH);
-            const rightH = new THREE.Mesh(headlightGeometry, headlightMaterial); rightH.position.set(-0.6, 0.2, 2.05); car.add(rightH);
-
-            const taillightMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000, emissive: 0xff0000, emissiveIntensity: 1.5 });
-            const leftT = new THREE.Mesh(headlightGeometry, taillightMaterial); leftT.position.set(0.6, 0.2, -2.05); car.add(leftT);
-            const rightT = new THREE.Mesh(headlightGeometry, taillightMaterial); rightT.position.set(-0.6, 0.2, -2.05); car.add(rightT);
-
-            const spoilerGeometry = new THREE.BoxGeometry(1.6, 0.2, 0.3);
-            const spoilerMaterial = new THREE.MeshStandardMaterial({ color: 0x002244 });
-            const spoiler = new THREE.Mesh(spoilerGeometry, spoilerMaterial);
-            spoiler.position.set(0, 0.9, -1.8);
-            car.add(spoiler);
-
-            car.position.copy(carPhysics.position);
             scene.add(car);
         }
 
-        function updateCar(deltaTime) {
+        function createTrack(cfg = { segments: 300, complexity: 1, turns: 5, jumps: 2, radius: 60 }) {
+            const path = [];
+            for (let i = 0; i <= cfg.segments; i++) {
+                const t = i / cfg.segments;
+                const angle = t * Math.PI * cfg.turns;
+                const radius = cfg.radius + Math.sin(t * 10) * 10;
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                let y = Math.sin(t * 5) * 5;
+                if (t > 0.3 && t < 0.35) y += 10; // Simple Jump
+                path.push(new THREE.Vector3(x, y, z));
+            }
+            track = path;
+            
+            const trackGeo = new THREE.BufferGeometry();
+            const verts = [];
+            for(let i=0; i<path.length-1; i++) {
+                const p1 = path[i], p2 = path[i+1];
+                const dir = new THREE.Vector3().subVectors(p2, p1).normalize();
+                const right = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(4);
+                verts.push(p1.x+right.x, p1.y, p1.z+right.z, p1.x-right.x, p1.y, p1.z-right.z, p2.x+right.x, p2.y, p2.z+right.z);
+                verts.push(p1.x-right.x, p1.y, p1.z-right.z, p2.x-right.x, p2.y, p2.z-right.z, p2.x+right.x, p2.y, p2.z+right.z);
+            }
+            trackGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+            scene.add(new THREE.Mesh(trackGeo, new THREE.MeshStandardMaterial({ color: 0x444444, side: THREE.DoubleSide })));
+            
+            // Finish line
+            const finish = new THREE.Mesh(new THREE.BoxGeometry(10, 0.2, 2), new THREE.MeshStandardMaterial({color: 0xffff00}));
+            finish.position.copy(path[path.length-1]);
+            scene.add(finish);
+        }
+
+        // --- FIXED GROUND DETECTION ---
+        function getTrackHeight(pos) {
+            let minDist = Infinity;
+            let nearestHeight = 0;
+
+            // 1. Find nearest track point
+            for (let i = 0; i < track.length; i++) {
+                const d = pos.distanceTo(track[i]);
+                if (d < minDist) {
+                    minDist = d;
+                    nearestHeight = track[i].y;
+                }
+            }
+
+            // 2. Determine if we are on track or on grass
+            // Track width is 8, so if distance to center is > 6, we are likely on grass
+            const groundLevel = 0; 
+            if (minDist > 6) {
+                // If car is above the grass level, return grass height
+                return groundLevel;
+            }
+            
+            // If we are over a track that is lower than the grass (unlikely but safe), 
+            // return the higher of the two.
+            return Math.max(nearestHeight, groundLevel);
+        }
+
+        function updateCar() {
             if (!gameStarted) return;
 
-            let accelerationInput = 0;
-            let turn = 0;
-
-            if (keys['w'] || keys['arrowup']) {
-                accelerationInput = carPhysics.acceleration;
-            }
-            if (keys['s'] || keys['arrowdown']) {
-                accelerationInput = -carPhysics.acceleration * 0.5;
-            }
-            if (keys['a'] || keys['arrowleft']) {
-                turn = carPhysics.turnSpeed;
-            }
-            if (keys['d'] || keys['arrowright']) {
-                turn = -carPhysics.turnSpeed;
-            }
-
-            if (keys[' ']) {
-                carPhysics.velocity.multiplyScalar(0.9);
-            }
+            let acc = 0, turn = 0;
+            if (keys['w'] || keys['arrowup']) acc = carPhysics.acceleration;
+            if (keys['s'] || keys['arrowdown']) acc = -carPhysics.acceleration;
+            if (keys['a'] || keys['arrowleft']) turn = carPhysics.turnSpeed;
+            if (keys['d'] || keys['arrowright']) turn = -carPhysics.turnSpeed;
 
             const trackY = getTrackHeight(carPhysics.position);
-            const isInAir = carPhysics.position.y > trackY + 1.5;
-            const turnMultiplier = isInAir ? carPhysics.airControl : 1.0;
-            carPhysics.rotation += turn * carPhysics.speed * 0.01 * turnMultiplier;
+            const isOnGround = carPhysics.position.y <= trackY + 1.1;
 
+            carPhysics.rotation += turn * (carPhysics.speed * 0.01);
             const forward = new THREE.Vector3(Math.sin(carPhysics.rotation), 0, Math.cos(carPhysics.rotation));
 
-            if (!isInAir) {
-                carPhysics.velocity.add(forward.multiplyScalar(accelerationInput));
+            if (isOnGround) {
+                carPhysics.velocity.add(forward.multiplyScalar(acc));
                 carPhysics.velocity.multiplyScalar(carPhysics.friction);
+                // Snap to ground to prevent jitter
+                carPhysics.position.y = trackY + 1; 
+                if (carPhysics.velocity.y < 0) carPhysics.velocity.y = 0;
             } else {
-                const airForward = forward.clone().multiplyScalar(accelerationInput * 0.3);
-                carPhysics.velocity.add(airForward);
+                carPhysics.velocity.y -= carPhysics.gravity;
+                carPhysics.velocity.add(forward.multiplyScalar(acc * carPhysics.airControl));
             }
 
-            const horizontalSpeed = Math.sqrt(carPhysics.velocity.x ** 2 + carPhysics.velocity.z ** 2);
-            if (horizontalSpeed > carPhysics.maxSpeed * 0.01) {
-                const scale = (carPhysics.maxSpeed * 0.01) / horizontalSpeed;
-                carPhysics.velocity.x *= scale;
-                carPhysics.velocity.z *= scale;
-            }
-            carPhysics.speed = horizontalSpeed * 100;
-
+            carPhysics.speed = new THREE.Vector3(carPhysics.velocity.x, 0, carPhysics.velocity.z).length() * 100;
             carPhysics.position.add(carPhysics.velocity);
-
-            if (carPhysics.position.y < trackY + 1) {
-                const bounce = Math.max(0, -carPhysics.velocity.y * 0.3);
-                carPhysics.position.y = trackY + 1;
-                carPhysics.velocity.y = bounce;
-            } else {
-                carPhysics.velocity.y -= 0.02;
-            }
 
             car.position.copy(carPhysics.position);
             car.rotation.y = carPhysics.rotation;
-            checkCheckpoints();
-            checkCrash();
+
+            // Reset if fell too far
+            if (carPhysics.position.y < -20) resetCar();
         }
-        
-        function checkCrash() {
-            if (!gameStarted || resetCooldown > 0) {
-                resetCooldown = Math.max(0, resetCooldown - 1);
-                return;
-            }
-            const timeSinceStart = (Date.now() - gameStartTime) / 1000;
-            if (timeSinceStart < 3) return;
-            
-            const trackY = getTrackHeight(carPhysics.position);
-            const dist = getDistanceFromTrack(carPhysics.position);
-            if (carPhysics.position.y < trackY - 30 || dist > 50 || carPhysics.position.y > trackY + 150) {
-                resetCar();
-            }
-        }
-        
-        function getDistanceFromTrack(position) {
-            let minDist = Infinity;
-            for (let i = 0; i < track.length; i++) {
-                const d = position.distanceTo(track[i]);
-                if (d < minDist) minDist = d;
-            }
-            return minDist;
-        }
-        
+
         function resetCar() {
-            const crashWarning = document.getElementById('crashWarning');
-            crashWarning.style.display = 'block';
-            setTimeout(() => { crashWarning.style.display = 'none'; }, 2000);
-            
-            const resetPos = lastCheckpointPosition.clone();
-            let cpIdx = 0;
-            for (let i = 0; i < track.length; i++) {
-                if (track[i].distanceTo(resetPos) < 5) { cpIdx = i; break; }
-            }
-            const nextP = track[Math.min(cpIdx + 5, track.length - 1)];
-            const dir = new THREE.Vector3().subVectors(nextP, resetPos).normalize();
-            
-            carPhysics.position.copy(resetPos);
-            carPhysics.position.y += 1;
+            carPhysics.position.copy(lastCheckpointPosition).add(new THREE.Vector3(0, 2, 0));
             carPhysics.velocity.set(0, 0, 0);
-            carPhysics.rotation = Math.atan2(dir.x, dir.z);
             carPhysics.speed = 0;
-            resetCooldown = 60;
         }
 
-        function getTrackHeight(position) {
-            let minDist = Infinity;
-            let height = 0;
-            for (let i = 0; i < track.length; i++) {
-                const d = position.distanceTo(track[i]);
-                if (d < minDist) { minDist = d; height = track[i].y; }
-            }
-            return height;
-        }
-
-        function checkCheckpoints() {
-            if (currentCheckpoint < checkpoints.length) {
-                const cp = checkpoints[currentCheckpoint];
-                if (!cp.passed && carPhysics.position.distanceTo(cp.position) < 8) {
-                    cp.passed = true;
-                    currentCheckpoint++;
-                    cp.mesh.children.forEach(child => {
-                        if (child.material && !child.userData.isHitbox && !child.userData.isNumber) {
-                            child.material.color.setHex(0xffff00);
-                            child.material.emissive.setHex(0xffff00);
-                        }
-                        if (child.userData.isNumber && child.material) {
-                            child.material.map = createTextTexture(currentCheckpoint.toString(), 120, '#ffff00', 'rgba(0,0,0,0.7)');
-                            child.material.emissive.setHex(0xffff00);
-                            child.material.needsUpdate = true;
-                        }
-                    });
-                    lastCheckpointPosition.copy(cp.position);
-                    document.getElementById('checkpoint').textContent = currentCheckpoint;
-                }
-            }
-            
-            const finishPos = track[track.length - 1];
-            if (currentCheckpoint >= checkpoints.length && carPhysics.position.distanceTo(finishPos) < 12) {
-                const finishTime = (Date.now() - startTime) / 1000;
-                completeLevel(finishTime);
-                let msg = `Race Complete!\nTime: ${finishTime.toFixed(2)}s`;
-                if (confirm(msg + '\n\nPlay again?')) {
-                    if (currentLevel > 0) { resetScene(); createTrack(trackConfigs[currentLevel - 1]); }
-                    startGame();
-                } else {
-                    gameStarted = false;
-                    document.getElementById('startScreen').classList.remove('hidden');
-                }
-            }
-        }
-
-        // --- UPDATED FOR "BEHIND CAR" ORIENTATION ---
         function updateCamera() {
-            if (!gameStarted) return;
-            // Changed Z from 15 to -15 to be BEHIND the car
-            const idealOffset = new THREE.Vector3(0, 8, -15).applyAxisAngle(new THREE.Vector3(0, 1, 0), carPhysics.rotation);
-            const idealPos = new THREE.Vector3().addVectors(carPhysics.position, idealOffset);
-            camera.position.lerp(idealPos, 0.1);
+            const offset = new THREE.Vector3(0, 8, -15).applyAxisAngle(new THREE.Vector3(0,1,0), carPhysics.rotation);
+            camera.position.lerp(carPhysics.position.clone().add(offset), 0.1);
             camera.lookAt(carPhysics.position);
         }
 
         function animate() {
             requestAnimationFrame(animate);
+            updateCar();
             if (gameStarted) {
-                updateCar(0.016);
                 updateCamera();
                 document.getElementById('speed').textContent = Math.round(carPhysics.speed);
-                document.getElementById('time').textContent = ((Date.now() - startTime) / 1000).toFixed(1);
+                document.getElementById('time').textContent = ((Date.now() - startTime)/1000).toFixed(1);
             }
             renderer.render(scene, camera);
         }
 
-        function checkSecretCode(key) {
-            secretCode += key.toLowerCase();
-            if (secretCode.length > SECRET_CODE.length) secretCode = secretCode.slice(-SECRET_CODE.length);
-            if (secretCode === SECRET_CODE) { unlockAllTracks(); secretCode = ''; }
-        }
-
-        function unlockAllTracks() {
-            for (let i = 1; i <= 25; i++) {
-                if (!trackProgress[i]) trackProgress[i] = {unlocked: true, bestTime: null, completed: false};
-                else trackProgress[i].unlocked = true;
-            }
-            saveProgress();
-            alert('🔓 ALL TRACKS UNLOCKED!');
-            if (!document.getElementById('levelSelectScreen').classList.contains('hidden')) renderLevelSelect();
-        }
-
-        function onKeyDown(event) {
-            const key = event.key.toLowerCase();
-            keys[key] = true;
-            if (key.length === 1 && /[a-z]/.test(key)) checkSecretCode(key);
-            if (key === 'r' && gameStarted && resetCooldown === 0) resetCar();
-            if (event.key === 'Escape') showMainMenu();
-        }
-
-        function onKeyUp(event) { keys[event.key.toLowerCase()] = false; }
-        function onWindowResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
-
-        function showMainMenu() {
-            document.getElementById('mainMenuScreen').style.display = 'flex';
-            document.getElementById('levelSelectScreen').classList.add('hidden');
-            document.getElementById('trackEditorScreen').style.display = 'none';
-            document.getElementById('startScreen').classList.add('hidden');
-            isEditorActive = false;
-            gameStarted = false;
-        }
-
         function startQuickRace() {
-            currentLevel = 0;
             document.getElementById('mainMenuScreen').style.display = 'none';
-            resetScene(); createTrack(); startGame();
+            createTrack();
+            startGame();
         }
 
-        function showLevelSelect() {
-            document.getElementById('mainMenuScreen').style.display = 'none';
-            document.getElementById('levelSelectScreen').classList.remove('hidden');
-            renderLevelSelect();
-        }
-
-        function renderLevelSelect() {
-            const grid = document.getElementById('levelGrid');
-            grid.innerHTML = '';
-            loadProgress();
-            trackConfigs.forEach((config, index) => {
-                const level = index + 1;
-                const progress = trackProgress[level] || {unlocked: level === 1, bestTime: null, completed: false};
-                const btn = document.createElement('div');
-                btn.className = 'level-button' + (!progress.unlocked ? ' locked' : '') + (progress.completed ? ' completed' : '');
-                btn.innerHTML = `<div class="level-number">${level}</div><div>${config.name}</div>${progress.bestTime ? `<div class="level-time">${progress.bestTime.toFixed(2)}s</div>` : ''}${!progress.unlocked ? '<div>🔒</div>' : ''}`;
-                if (progress.unlocked) btn.onclick = () => { currentLevel = level; resetScene(); createTrack(trackConfigs[index]); startGame(); };
-                grid.appendChild(btn);
-            });
-        }
-
-        function loadProgress() {
-            const saved = localStorage.getItem('trackmaniaProgress');
-            trackProgress = saved ? JSON.parse(saved) : {1: {unlocked: true, bestTime: null, completed: false}};
-        }
-
-        function saveProgress() { localStorage.setItem('trackmaniaProgress', JSON.stringify(trackProgress)); }
-
-        function completeLevel(time) {
-            if (currentLevel === 0) return;
-            const prog = trackProgress[currentLevel] || {unlocked: true, bestTime: null, completed: false};
-            if (!prog.bestTime || time < prog.bestTime) prog.bestTime = time;
-            prog.completed = true;
-            if (currentLevel < 25 && !trackProgress[currentLevel+1]) trackProgress[currentLevel+1] = {unlocked: true, bestTime: null, completed: false};
-            trackProgress[currentLevel] = prog;
-            saveProgress();
-        }
-
-        function resetScene() {
-            const toRemove = [];
-            scene.children.forEach(c => {
-                if (c === car || c.type === 'DirectionalLight' || c.type === 'AmbientLight' || (c.type === 'Mesh' && c.geometry.type === 'PlaneGeometry' && c.geometry.parameters.width > 1000)) return;
-                toRemove.push(c);
-            });
-            toRemove.forEach(i => scene.remove(i));
-            track = []; checkpoints = [];
-        }
-
-        // --- UPDATED STARTGAME FOR AUTO-ALIGNMENT ---
         function startGame() {
             document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('levelSelectScreen').classList.add('hidden');
-            document.getElementById('mainMenuScreen').style.display = 'none';
-            
             gameStarted = true;
             startTime = Date.now();
-            gameStartTime = Date.now();
-            currentCheckpoint = 0;
-            
-            const startPos = track[0] || new THREE.Vector3(0, 2, 0);
-            carPhysics.position.copy(startPos);
-            carPhysics.position.y += 1;
-            lastCheckpointPosition.copy(carPhysics.position);
-            carPhysics.velocity.set(0, 0, 0);
-            
-            // Align car with the direction of the track
-            if (track.length > 1) {
-                const nextP = track[1];
-                const dir = new THREE.Vector3().subVectors(nextP, startPos).normalize();
-                carPhysics.rotation = Math.atan2(dir.x, dir.z);
-            } else {
-                carPhysics.rotation = 0;
-            }
-            
-            carPhysics.speed = 0;
-            resetCooldown = 0;
-            animate();
+            carPhysics.position.set(track[0].x, track[0].y + 2, track[0].z);
         }
 
-        function showTrackEditor() {
-            document.getElementById('mainMenuScreen').style.display = 'none';
-            document.getElementById('trackEditorScreen').style.display = 'block';
-            isEditorActive = true;
-            initEditor();
-        }
-
-        function initEditor() {
-            const container = document.getElementById('editorContainer');
-            container.innerHTML = '';
-            editorScene = new THREE.Scene();
-            editorScene.background = new THREE.Color(0x222222);
-            editorCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-            editorCamera.position.set(0, 50, 100);
-            editorCamera.lookAt(0, 0, 0);
-            editorRenderer = new THREE.WebGLRenderer({ antialias: true });
-            editorRenderer.setSize(window.innerWidth, window.innerHeight);
-            container.appendChild(editorRenderer.domElement);
-            editorScene.add(new THREE.AmbientLight(0xffffff, 0.6));
-            const g = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshStandardMaterial({ color: 0x2d5016 }));
-            g.rotation.x = -Math.PI / 2;
-            editorScene.add(g);
-            editorScene.add(new THREE.GridHelper(500, 50));
-            animateEditor();
-        }
-
-        function animateEditor() {
-            if (!isEditorActive) return;
-            requestAnimationFrame(animateEditor);
-            editorRenderer.render(editorScene, editorCamera);
-        }
+        function showLevelSelect() { /* Logic for level selection */ }
+        function showMainMenu() { location.reload(); }
 
         init();
-        loadProgress();
         animate();
     </script>
 </body>
