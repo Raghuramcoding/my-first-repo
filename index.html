@@ -6,248 +6,139 @@
     <title>3D Arcade Racing - Trackmania Edition</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; background: #000; }
+        body { font-family: sans-serif; overflow: hidden; background: #000; }
         #gameContainer { width: 100vw; height: 100vh; position: relative; }
         #ui {
             position: absolute; top: 20px; left: 20px; color: white;
             z-index: 100; background: rgba(0, 0, 0, 0.7);
-            padding: 20px; border-radius: 15px; border: 2px solid #00ffff;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            padding: 15px; border-radius: 10px; border: 2px solid #00ffff;
         }
-        #speed { font-size: 32px; font-weight: 900; color: #00ff00; font-family: 'Courier New', Courier, monospace; }
-        #crashWarning {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(255, 0, 0, 0.9); color: white; padding: 20px 40px;
-            border-radius: 10px; font-size: 24px; font-weight: bold; z-index: 200;
-            display: none; text-align: center; border: 3px solid #ff0000;
-        }
+        #speed { font-size: 28px; font-weight: bold; color: #00ff00; }
         #mainMenuScreen {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle, #1a1a1a 0%, #000 100%);
-            z-index: 3000; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: #111; z-index: 3000; display: flex; 
+            flex-direction: column; justify-content: center; align-items: center;
         }
         .menu-button {
-            background: linear-gradient(45deg, #00ffff, #0088ff); color: #000;
-            border: none; padding: 20px 50px; font-size: 1.5em; border-radius: 5px;
-            cursor: pointer; margin: 15px; font-weight: 900; transition: 0.2s; min-width: 300px;
-            clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+            background: #00ffff; color: #000; border: none; 
+            padding: 20px 50px; font-size: 1.5em; cursor: pointer;
+            font-weight: bold; margin-top: 20px;
         }
-        .menu-button:hover { transform: scale(1.1); background: #fff; box-shadow: 0 0 30px #00ffff; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <div id="gameContainer"></div>
-    <div id="ui">
-        <div>SPEED: <span id="speed">0</span> <small>KM/H</small></div>
-        <div>TIME: <span id="time">0.0</span>s</div>
-        <div>CP: <span id="checkpoint">0</span> / <span id="totalCheckpoints">0</span></div>
+    <div id="ui" class="hidden">
+        <div>SPEED: <span id="speed">0</span> KM/H</div>
     </div>
-    <div id="crashWarning">CRASHED!</div>
 
     <div id="mainMenuScreen">
-        <h1 style="font-size: 5em; color: #fff; text-shadow: 0 0 20px #00ffff; margin-bottom: 20px; font-style: italic;">TRACKMANIA EVO</h1>
+        <h1 style="color: white; font-style: italic;">TRACKMANIA EVO</h1>
         <button class="menu-button" onclick="startQuickRace()">START RACE</button>
-        <button class="menu-button" style="background: #333; color: #777;">CAMPAIGN (LOCKED)</button>
-        <div style="color: #555; margin-top: 20px;">PRESS [R] TO INSTANT RESET</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer, car, track = [], checkpoints = [];
-        let gameStarted = false, startTime = 0, currentCheckpoint = 0, keys = {};
-        let lastCheckpointPos = new THREE.Vector3(0, 2, 0);
-        let lastCheckpointRot = 0;
+        let scene, camera, renderer, car;
+        let gameStarted = false, keys = {};
+        let trackPoints = [];
 
         const carPhysics = {
-            position: new THREE.Vector3(0, 2, 0),
-            velocity: new THREE.Vector3(0, 0, 0),
-            rotation: 0,
+            pos: new THREE.Vector3(0, 2, 0),
+            vel: new THREE.Vector3(0, 0, 0),
+            rot: 0,
             speed: 0,
-            maxSpeed: 600, 
-            acceleration: 1.2,
-            deceleration: 0.98,
-            turnSpeed: 0.05,
-            driftFactor: 0.96, // Lower = more sliding
-            airControl: 0.8
+            maxSpeed: 5, // Internal units
+            accel: 0.01,
+            friction: 0.98
         };
 
         function init() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x050505);
-            scene.fog = new THREE.Fog(0x050505, 200, 1000);
-
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+            
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.shadowMap.enabled = true;
             document.getElementById('gameContainer').appendChild(renderer.domElement);
 
-            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-            scene.add(hemiLight);
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(10, 20, 10);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040));
 
-            const sun = new THREE.DirectionalLight(0xffffff, 1);
-            sun.position.set(100, 200, 100);
-            scene.add(sun);
-
-            createCar();
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-            document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
-            document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-            document.addEventListener('keydown', e => { if(e.key.toLowerCase() === 'r') resetCar(); });
+            // Setup Keys
+            window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+            window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
         }
 
         function createCar() {
-            car = new THREE.Group();
             const body = new THREE.Mesh(
-                new THREE.BoxGeometry(2, 0.6, 4),
-                new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.8, roughness: 0.2 })
+                new THREE.BoxGeometry(2, 1, 4),
+                new THREE.MeshStandardMaterial({ color: 0x00ffff })
             );
+            car = new THREE.Group();
             car.add(body);
-            
-            // Neon underglow
-            const glow = new THREE.PointLight(0x00ffff, 2, 10);
-            glow.position.y = -0.5;
-            car.add(glow);
-
             scene.add(car);
         }
 
         function createTrack() {
-            const trackWidth = 12;
             const points = [];
-            // Trackmania style: Long straights and huge curves
-            for(let i=0; i<400; i++) {
-                const t = i * 0.1;
-                const x = Math.sin(t * 0.2) * 100 + Math.cos(t * 0.05) * 200;
-                const z = i * 15;
-                const y = Math.sin(i * 0.1) * 20 + (i > 100 && i < 150 ? Math.pow(i-100, 1.5) : 0);
-                points.push(new THREE.Vector3(x, y, z));
+            for(let i=0; i<200; i++) {
+                points.push(new THREE.Vector3(Math.sin(i*0.1)*20, Math.sin(i*0.05)*10, i*15));
             }
-            track = points;
+            trackPoints = points;
 
-            const geometry = new THREE.BufferGeometry();
-            const verts = [], indices = [];
-            
-            for(let i=0; i<points.length-1; i++) {
-                const p = points[i], next = points[i+1];
-                const dir = new THREE.Vector3().subVectors(next, p).normalize();
-                const right = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(trackWidth);
-                
-                const v1 = p.clone().add(right), v2 = p.clone().sub(right);
-                const v3 = next.clone().add(right), v4 = next.clone().sub(right);
-                
-                const b = verts.length / 3;
-                verts.push(v1.x, v1.y, v1.z, v2.x, v2.y, v2.z, v3.x, v3.y, v3.z, v4.x, v4.y, v4.z);
-                indices.push(b, b+1, b+2, b+1, b+3, b+2);
-            }
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-            geometry.setIndex(indices);
-            geometry.computeVertexNormals();
+            const shape = new THREE.Shape();
+            shape.moveTo(-6, 0); shape.lineTo(6, 0); // Flat road
 
-            const mat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.4 });
-            const mesh = new THREE.Mesh(geometry, mat);
+            const extrudeSettings = { steps: 200, bevelEnabled: false, extrudePath: new THREE.CatmullRomCurve3(points) };
+            const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            const material = new THREE.MeshStandardMaterial({ color: 0x222222, wireframe: false });
+            const mesh = new THREE.Mesh(geometry, material);
             scene.add(mesh);
-
-            // Add Boost Pads (Yellow segments)
-            for(let i=50; i<points.length; i+=80) {
-                const padGeo = new THREE.PlaneGeometry(trackWidth*2, 5);
-                const padMat = new THREE.MeshStandardMaterial({ color: 0xffff00, emissive: 0xffff00 });
-                const pad = new THREE.Mesh(padGeo, padMat);
-                pad.position.copy(points[i]).y += 0.1;
-                pad.rotation.x = -Math.PI/2;
-                pad.userData.boost = true;
-                scene.add(pad);
-            }
-        }
-
-        function updateCar(dt) {
-            if(!gameStarted) return;
-
-            const isGround = carPhysics.position.y <= getTrackHeight(carPhysics.position) + 1.1;
-            
-            // Input
-            let acc = 0;
-            if(keys['w']) acc = carPhysics.acceleration;
-            if(keys['s']) acc = -carPhysics.acceleration;
-            
-            // Turn Logic
-            const turnDir = (keys['a'] ? 1 : 0) - (keys['d'] ? 1 : 0);
-            const turnPower = isGround ? carPhysics.turnSpeed : carPhysics.turnSpeed * carPhysics.airControl;
-            carPhysics.rotation += turnDir * turnPower * (carPhysics.speed / 100 + 0.5);
-
-            // Forward movement
-            const forward = new THREE.Vector3(Math.sin(carPhysics.rotation), 0, Math.cos(carPhysics.rotation));
-            
-            if(isGround) {
-                // Apply Friction/Acceleration
-                carPhysics.velocity.add(forward.multiplyScalar(acc));
-                
-                // Trackmania Drift: car slides more at high speed
-                const slide = carPhysics.speed > 200 ? carPhysics.driftFactor : 0.99;
-                carPhysics.velocity.multiplyScalar(slide);
-            } else {
-                carPhysics.velocity.y -= 0.5; // Gravity
-            }
-
-            carPhysics.position.add(carPhysics.velocity);
-            
-            // Snap to track
-            const groundY = getTrackHeight(carPhysics.position);
-            if(carPhysics.position.y < groundY + 1) {
-                carPhysics.position.y = groundY + 1;
-                carPhysics.velocity.y = 0;
-            }
-
-            carPhysics.speed = carPhysics.velocity.length() * 100;
-            car.position.copy(carPhysics.position);
-            car.rotation.y = carPhysics.rotation;
-
-            // FOV Effect (Trackmania feel)
-            camera.fov = 70 + (carPhysics.speed / 15);
-            camera.updateProjectionMatrix();
-        }
-
-        function getTrackHeight(pos) {
-            let closest = track[0], minDist = Infinity;
-            track.forEach(p => {
-                const d = pos.distanceTo(p);
-                if(d < minDist) { minDist = d; closest = p; }
-            });
-            return closest.y;
-        }
-
-        function resetCar() {
-            carPhysics.position.copy(lastCheckpointPos);
-            carPhysics.velocity.set(0,0,0);
-            carPhysics.rotation = lastCheckpointRot;
         }
 
         function startQuickRace() {
             document.getElementById('mainMenuScreen').classList.add('hidden');
+            document.getElementById('ui').classList.remove('hidden');
             createTrack();
-            carPhysics.position.copy(track[0]).y += 2;
-            lastCheckpointPos.copy(carPhysics.position);
+            createCar();
+            
+            // Set initial position
+            carPhysics.pos.copy(trackPoints[0]).y += 2;
             gameStarted = true;
-            startTime = Date.now();
+        }
+
+        function update() {
+            if(!gameStarted) return;
+
+            // Simple movement
+            if(keys['w']) carPhysics.speed += carPhysics.accel;
+            if(keys['s']) carPhysics.speed -= carPhysics.accel;
+            carPhysics.speed *= carPhysics.friction;
+
+            if(keys['a']) carPhysics.rot += 0.03;
+            if(keys['d']) carPhysics.rot -= 0.03;
+
+            const direction = new THREE.Vector3(Math.sin(carPhysics.rot), 0, Math.cos(carPhysics.rot));
+            carPhysics.pos.add(direction.multiplyScalar(carPhysics.speed));
+
+            car.position.copy(carPhysics.pos);
+            car.rotation.y = carPhysics.rot;
+
+            // Camera follow
+            const camOffset = new THREE.Vector3(0, 5, -15).applyAxisAngle(new THREE.Vector3(0, 1, 0), carPhysics.rot);
+            camera.position.lerp(carPhysics.pos.clone().add(camOffset), 0.1);
+            camera.lookAt(carPhysics.pos);
+
+            document.getElementById('speed').textContent = Math.round(carPhysics.speed * 100);
         }
 
         function animate() {
             requestAnimationFrame(animate);
-            updateCar(0.016);
-            
-            if(gameStarted) {
-                const offset = new THREE.Vector3(0, 6, -12).applyAxisAngle(new THREE.Vector3(0, 1, 0), carPhysics.rotation);
-                camera.position.lerp(carPhysics.position.clone().add(offset), 0.1);
-                camera.lookAt(carPhysics.position);
-                
-                document.getElementById('speed').textContent = Math.round(carPhysics.speed);
-                document.getElementById('time').textContent = ((Date.now() - startTime)/1000).toFixed(2);
-            }
+            update();
             renderer.render(scene, camera);
         }
 
