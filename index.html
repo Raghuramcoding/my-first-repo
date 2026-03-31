@@ -419,17 +419,16 @@
             });
         }
         
-        // --- PHYSICS UPDATED FOR 10s ACCELERATION ---
         const carPhysics = {
             position: new THREE.Vector3(0, 2, 0),
             velocity: new THREE.Vector3(0, 0, 0),
             rotation: 0,
             speed: 0,
-            maxSpeed: 400,          // Set top speed to 400
-            acceleration: 0.02,     // Lower acceleration for gradual gain
+            maxSpeed: 400,
+            acceleration: 0.02,
             deceleration: 0.95,
             turnSpeed: 0.04, 
-            friction: 0.995,        // Very low drag so car can reach 400 over time
+            friction: 0.995,
             airControl: 0.5 
         };
 
@@ -869,7 +868,6 @@
             let accelerationInput = 0;
             let turn = 0;
 
-            // Updated for lowercase arrow keys + WASD
             if (keys['w'] || keys['arrowup']) {
                 accelerationInput = carPhysics.acceleration;
             }
@@ -1018,9 +1016,11 @@
             }
         }
 
+        // --- UPDATED FOR "BEHIND CAR" ORIENTATION ---
         function updateCamera() {
             if (!gameStarted) return;
-            const idealOffset = new THREE.Vector3(0, 8, 15).applyAxisAngle(new THREE.Vector3(0, 1, 0), carPhysics.rotation);
+            // Changed Z from 15 to -15 to be BEHIND the car
+            const idealOffset = new THREE.Vector3(0, 8, -15).applyAxisAngle(new THREE.Vector3(0, 1, 0), carPhysics.rotation);
             const idealPos = new THREE.Vector3().addVectors(carPhysics.position, idealOffset);
             camera.position.lerp(idealPos, 0.1);
             camera.lookAt(carPhysics.position);
@@ -1127,19 +1127,32 @@
             track = []; checkpoints = [];
         }
 
+        // --- UPDATED STARTGAME FOR AUTO-ALIGNMENT ---
         function startGame() {
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('levelSelectScreen').classList.add('hidden');
             document.getElementById('mainMenuScreen').style.display = 'none';
+            
             gameStarted = true;
             startTime = Date.now();
             gameStartTime = Date.now();
             currentCheckpoint = 0;
-            carPhysics.position.copy(track[0] || new THREE.Vector3(0, 2, 0));
+            
+            const startPos = track[0] || new THREE.Vector3(0, 2, 0);
+            carPhysics.position.copy(startPos);
             carPhysics.position.y += 1;
             lastCheckpointPosition.copy(carPhysics.position);
             carPhysics.velocity.set(0, 0, 0);
-            carPhysics.rotation = 0;
+            
+            // Align car with the direction of the track
+            if (track.length > 1) {
+                const nextP = track[1];
+                const dir = new THREE.Vector3().subVectors(nextP, startPos).normalize();
+                carPhysics.rotation = Math.atan2(dir.x, dir.z);
+            } else {
+                carPhysics.rotation = 0;
+            }
+            
             carPhysics.speed = 0;
             resetCooldown = 0;
             animate();
