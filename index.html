@@ -472,9 +472,6 @@
             ground.receiveShadow = true;
             scene.add(ground);
 
-            // Create track (will be created when level is selected or quick race starts)
-            // Track creation happens in startGame() or selectLevel()
-
             // Create car
             createCar();
 
@@ -994,16 +991,17 @@
             let acceleration = 0;
             let turn = 0;
 
-            if (keys['w'] || keys['ArrowUp']) {
+            // FIX: Use lowercase arrow keys to match event.key.toLowerCase()
+            if (keys['w'] || keys['arrowup']) {
                 acceleration = carPhysics.acceleration;
             }
-            if (keys['s'] || keys['ArrowDown']) {
+            if (keys['s'] || keys['arrowdown']) {
                 acceleration = -carPhysics.acceleration * 0.5;
             }
-            if (keys['a'] || keys['ArrowLeft']) {
+            if (keys['a'] || keys['arrowleft']) {
                 turn = carPhysics.turnSpeed;
             }
-            if (keys['d'] || keys['ArrowRight']) {
+            if (keys['d'] || keys['arrowright']) {
                 turn = -carPhysics.turnSpeed;
             }
 
